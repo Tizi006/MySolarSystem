@@ -2,21 +2,39 @@ import '../style.css'
 import * as THREE from 'three';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
 
-/*setup os scene*/
+/*Global Variable*/
 const [planetposition] = Array([0, 57.9, 108.2, 149.6, 160, 227.6, 778.6, 1433.5, 2872.5, 4495.1]);
 const [triggerpoints] = Array([planetposition[1] - 15, planetposition[2] - 15, planetposition[3] - 15, planetposition[4] - 2, planetposition[5] - 20, planetposition[6] - 300, planetposition[7] - 300, planetposition[8] - 700, planetposition[9] - 1000]);
+const [SunID, MercuryID, VenusID, EarthID, MoonID, MarsID, JupiterID, SaturnID, UranusID, NeptunID] = [
+    document.getElementById('Sun'),
+    document.getElementById('Mercury'),
+    document.getElementById('Venus'),
+    document.getElementById('Earth'),
+    document.getElementById('Moon'),
+    document.getElementById('Mars'),
+    document.getElementById('Jupiter'),
+    document.getElementById('Saturn'),
+    document.getElementById('Uranus'),
+    document.getElementById('Neptun'),
+];
+const Box = [SunID, MercuryID, VenusID, EarthID, MoonID, MarsID, JupiterID, SaturnID, UranusID, NeptunID];
+let Boxtrigger = true;
+
+/*Initialize scene*/
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 50000);
 const renderer = new THREE.WebGLRenderer({
     canvas: document.querySelector('#bg')
 });
-
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.render(scene, camera);
 camera.position.set(40, 0, -100)
+
 //orbitcontrol
 const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableZoom = false;
+controls.enableRotate = false;
 controls.target.set(0, 0, 0);
 
 //light
@@ -151,7 +169,7 @@ renderer.render(scene, camera);
 
 //Array(400).fill().forEach(addStar);
 
-function addStar() {
+/*function addStar() {
     const [x, y, z] = Array(3).fill().map(() => THREE.MathUtils.randFloatSpread(250));
     const [color] = Array([0xE2FF05, 0xFADD00, 0xFFBD08, 0xFF9705, 0xFF6105, 0x90FFF9])
     const randomColor = color[Math.floor(Math.random() * color.length)];
@@ -161,6 +179,31 @@ function addStar() {
     const star = new THREE.Mesh(geometry, material);
     star.position.set(x, y, z);
     scene.add(star);
+}*/
+
+function toggleInfobox() {
+    const elements = document.getElementsByClassName('contentBox-left');
+    const elements2 = document.getElementsByClassName('contentBox-right');
+    const allElements = [...elements, ...elements2];
+    console.log("aaaaaaaaaaa")
+    for (const element of allElements) {
+        if (Boxtrigger === false) {
+            element.style.visibility = 'visible';
+            Boxtrigger = true;
+        } else {
+            element.style.visibility = 'hidden';
+            Boxtrigger = false;
+        }
+    }
+}
+
+function setBoxVisibility(VisibleBox) {
+    if (Boxtrigger === true) {
+        for (let i = 0; i < Box.length; i++) {
+            Box[i].style.opacity = '0';
+        }
+        VisibleBox.style.opacity = '100';
+    }
 }
 
 function incrementValue(value, target) {
@@ -185,24 +228,34 @@ function orbitObject(orbitingObject, centerObject, distance, angleSpeed) {
 function getfocusedPlanet(t) {
     //sun
     if (t < triggerpoints[0] && controls.target !== sun.position) {
+        setBoxVisibility(SunID);
         return sun.position;
     } else if ((camera.position.z <= triggerpoints[1] && camera.position.z > triggerpoints[0]) && controls.target !== mercury.position) {
+        setBoxVisibility(MercuryID);
         return mercury.position;
     } else if ((camera.position.z <= triggerpoints[2] && camera.position.z > triggerpoints[1]) && controls.target !== venus.position) {
+        setBoxVisibility(VenusID);
         return venus.position;
     } else if ((camera.position.z <= triggerpoints[3] && camera.position.z > triggerpoints[2]) && controls.target !== eath.position) {
+        setBoxVisibility(EarthID);
         return eath.position;
     } else if ((camera.position.z <= triggerpoints[4] && camera.position.z > triggerpoints[3]) && controls.target !== moon.position) {
+        setBoxVisibility(MoonID);
         return moon.position;
     } else if ((camera.position.z <= triggerpoints[5] && camera.position.z > triggerpoints[4]) && controls.target !== mars.position) {
+        setBoxVisibility(MarsID);
         return mars.position;
     } else if ((camera.position.z <= triggerpoints[6] && camera.position.z > triggerpoints[5]) && controls.target !== jupiter.position) {
+        setBoxVisibility(JupiterID);
         return jupiter.position;
     } else if ((camera.position.z <= triggerpoints[7] && camera.position.z > triggerpoints[6]) && controls.target !== saturn.position) {
+        setBoxVisibility(SaturnID);
         return saturn.position;
     } else if ((camera.position.z <= triggerpoints[8] && camera.position.z > triggerpoints[7]) && controls.target !== uranus.position) {
+        setBoxVisibility(UranusID);
         return uranus.position;
     } else if ((camera.position.z > triggerpoints[8]) && controls.target !== neptune.position) {
+        setBoxVisibility(NeptunID);
         return neptune.position;
     }
 
@@ -230,14 +283,13 @@ function animate() {
     neptune.rotation.y += (1 / 7.5) / 2;
 
     orbitObject(moon, eath, 3.5, 0.016);
-    moon.rotation.y -=0.0016
+    moon.rotation.y -= 0.0016
 
     /*set camera fov*/
-    if (camera.position.z < triggerpoints[4]&&camera.position.z > triggerpoints[3]) {
+    if (camera.position.z < triggerpoints[4] && camera.position.z > triggerpoints[3]) {
         camera.fov = incrementValue(camera.fov, 5);
-    }
-    else {
-        camera.fov=incrementValue(camera.fov, 60)
+    } else {
+        camera.fov = incrementValue(camera.fov, 60)
     }
     camera.updateProjectionMatrix();
 
@@ -276,9 +328,9 @@ function moveCamera() {
         // if(!((camera.position.x-1.5<0.1)&&(camera.position.x-1.5>-0.1))){
         const targetPosition = new THREE.Vector3(3.3, camera.position.y, camera.position.z);
         camera.position.lerp(targetPosition, 0.1);
-    }  else if (camera.position.z < triggerpoints[5]) {
+    } else if (camera.position.z < triggerpoints[5]) {
         // if(!((camera.position.x-1.5<0.1)&&(camera.position.x-1.5>-0.1))){
-        const targetPosition = new THREE.Vector3(1.5, camera.position.y, camera.position.z);
+        const targetPosition = new THREE.Vector3(1.8, camera.position.y, camera.position.z);
         camera.position.lerp(targetPosition, 0.1);
         //   }
     } else if (camera.position.z < triggerpoints[6]) {
@@ -306,4 +358,3 @@ function moveCamera() {
 
 document.body.onscroll = moveCamera;
 animate();
-

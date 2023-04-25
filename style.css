@@ -12,16 +12,14 @@ canvas {
 
 main {
     position: absolute;
-    display: grid;
-    grid-template-columns: repeat(12, 1fr);
     color: var(--StandartTextcolor1);
 }
 
 img {
     object-fit: cover;
-    width: 100%;
-    height: 100%;
+    max-height: 200px;
     padding-right: 40px;
+    flex-basis: 30%
 }
 
 button {
@@ -32,7 +30,8 @@ button {
     margin: 10px;
     background: var(--Standartcolor1);
 }
-svg{
+
+svg {
     color: var(--StandartTextcolor1);
     height: max-content;
     width: max-content;
@@ -45,24 +44,27 @@ svg{
     background: var(--Standartcolor1);
     height: fit-content;
     border-radius: 20px;
-    grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
-    grid-gap: 10px;
-    margin-top: 10px;
-    margin-bottom: 10px;
+    position: fixed;
+    width: 60%;
+    max-height: 200px;
+    align-items: center;
+    transition: opacity 1s ease;
 }
 
-.contentBox-left, .placeholder-item-left {
-    grid-column: 2/7;
+.contentBox-left {
+    left: 100px;
 }
 
-.contentBox-right, .placeholder-item-right {
-    grid-column: 7/13;
-    margin-right: 20px;
+.contentBox-right {
+    bottom: 2%;
+    right: 2%;
 }
 
 .item {
     align-self: flex-start;
     padding: 10px;
+    max-height: 190px;
+    overflow: scroll;
 }
 
 .menu-bar {
@@ -77,72 +79,20 @@ svg{
     grid-template-rows: repeat(12, 1fr);
 }
 
+/*IDs*/
+#Sun, #Mercury, #Venus, #Earth, #Moon, #Mars, #Jupiter, #Saturn, #Neptun, #Uranus {
+    opacity: 100;
+}
+
 /*placehodler*/
 .placeholder-item-left, .placeholder-item-right {
     height: 50vh;
 }
 
-#placeholder-head {
-    height: 10vh;
-}
-
-#placeholder-sun {
-    height: 60vh;
-    grid-column: 2/7;
-}
-
-#placeholder-mercury {
-    height: 40vh;
-    grid-column: 7/13;
-}
-
-#placeholder-venus {
-    height: 10vh;
-}
-
-#placeholder-earth {
-    height: 10vh;
-}
-
-#placeholder-moon {
-    height: 10vh;
-}
-
-#placeholder-mars {
-    height: 70vh;
-}
-
-#placeholder-jupiter {
-    height: 120vh;
-}
-
-#placeholder-saturn {
-    height: 230vh;
-}
-
-#placeholder-uranus {
-    height: 430vh;
-}
-
-#placeholder-neptun {
-    height: 60vh;
-}
-
 #placeholder-temp {
-    height: 1100px;
-
+    height: 12000px;
+    background: white;
 }
 
 /* small classes*/
-.span-all {
-    grid-column: 1/13;
-}
-
-.span-first {
-    grid-column: 2/7;
-}
-
-.span-last {
-    grid-column: 7/13;
-}
 
