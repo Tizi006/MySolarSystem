@@ -77,6 +77,7 @@ svg {
     color: var(--StandartTextcolor1);
     display: grid;
     grid-template-rows: repeat(12, 1fr);
+
 }
 
 /*IDs*/
@@ -91,7 +92,6 @@ svg {
 
 #placeholder-temp {
     height: 12000px;
-    background: white;
 }
 
 /* small classes*/

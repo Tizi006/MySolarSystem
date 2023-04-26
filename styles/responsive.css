@@ -1,0 +1,16 @@
+@media (max-width: 750px) {
+    img {
+        display: none;
+    }
+
+    .contentBox-right, .contentBox-left {
+        left: 2%;bottom: 2%;
+        width: 91%;
+    }
+
+    .menu-bar {
+        grid-template-columns: repeat(12, 1fr);
+        width: 100vw;
+        height: 80px;
+    }
+}

@@ -1,6 +1,8 @@
-import '../style.css'
+import '../styles/main.css'
 import * as THREE from 'three';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
+import{Boxtrigger} from './user-events.js'
+
 
 /*Global Variable*/
 const [planetposition] = Array([0, 57.9, 108.2, 149.6, 160, 227.6, 778.6, 1433.5, 2872.5, 4495.1]);
@@ -18,7 +20,7 @@ const [SunID, MercuryID, VenusID, EarthID, MoonID, MarsID, JupiterID, SaturnID, 
     document.getElementById('Neptun'),
 ];
 const Box = [SunID, MercuryID, VenusID, EarthID, MoonID, MarsID, JupiterID, SaturnID, UranusID, NeptunID];
-let Boxtrigger = true;
+
 
 /*Initialize scene*/
 const scene = new THREE.Scene();
@@ -181,26 +183,11 @@ renderer.render(scene, camera);
     scene.add(star);
 }*/
 
-function toggleInfobox() {
-    const elements = document.getElementsByClassName('contentBox-left');
-    const elements2 = document.getElementsByClassName('contentBox-right');
-    const allElements = [...elements, ...elements2];
-    console.log("aaaaaaaaaaa")
-    for (const element of allElements) {
-        if (Boxtrigger === false) {
-            element.style.visibility = 'visible';
-            Boxtrigger = true;
-        } else {
-            element.style.visibility = 'hidden';
-            Boxtrigger = false;
-        }
-    }
-}
 
 function setBoxVisibility(VisibleBox) {
     if (Boxtrigger === true) {
         for (let i = 0; i < Box.length; i++) {
-            Box[i].style.opacity = '0';
+           Box[i].style.opacity = '0';
         }
         VisibleBox.style.opacity = '100';
     }
