@@ -1,9 +1,12 @@
 export {Boxtrigger};
 let Boxtrigger = true;
-const Togglebox = document.querySelector('#Toggle-Box-Button')
-Togglebox.addEventListener('click', toggleInfobox);
+const ToggleBoxButton = document.querySelector('#Toggle-Box-Button')
+ToggleBoxButton.addEventListener('click', togglePlanetBox);
+let infotrigger = false;
+const InfoButton = document.querySelector('#Toggle-info-Button')
+InfoButton.addEventListener('click', toggleInfoDisplay);
 
-function toggleInfobox() {
+function togglePlanetBox() {
     const elements = document.getElementsByClassName('contentBox-left');
     const elements2 = document.getElementsByClassName('contentBox-right');
     const allElements = [...elements, ...elements2];
@@ -22,5 +25,17 @@ function toggleInfobox() {
     }
 }
 
+function toggleInfoDisplay() {
+    const display = document.getElementById('info-pop-in');
+    if (infotrigger===false ) {
+        infotrigger = true;
+        display.style.visibility = 'visible';
+        display.style.opacity=100;
+    } else {
+        infotrigger = false;
+        display.style.opacity=0;
+        display.style.visibility = 'hidden';
+    }
+}
 
 

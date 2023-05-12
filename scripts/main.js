@@ -51,7 +51,7 @@ scene.background = backgroundTexture;
 //sun
 const sunTexture = new THREE.TextureLoader().load('images/8k_sun.jpg');
 const sun = new THREE.Mesh(
-    new THREE.SphereGeometry(30, 100, 100),
+    new THREE.SphereGeometry(27.8, 100, 100),
     //139.14 radius to scale
     new THREE.MeshBasicMaterial({
         map: sunTexture
@@ -131,7 +131,6 @@ const saturnRing = new THREE.Mesh(
         side: THREE.DoubleSide
     }));
 saturnRing.position.set(0, 0, planetposition[7]);
-saturnRing.rotation.x = 27;
 saturnRing.rotation.set(27, 0, 0);
 
 //uranus
@@ -187,9 +186,9 @@ renderer.render(scene, camera);
 function setBoxVisibility(VisibleBox) {
     if (Boxtrigger === true) {
         for (let i = 0; i < Box.length; i++) {
-           Box[i].style.opacity = '0';
+           Box[i].style.visibility = 'hidden';
         }
-        VisibleBox.style.opacity = '100';
+        VisibleBox.style.visibility = 'visible';
     }
 }
 
@@ -257,7 +256,7 @@ function animate() {
         controls.target.lerp(currentPlanetPosition, 0.05);
     }
 
-    //rotations: (1/(days*10))/2
+    //rotations: (1/(days*20))
     sun.rotation.y += (1 / 270 / 2)
     mercury.rotation.y += (1 / 588) / 2;
     venus.rotation.y += (1 / 2430) / 2;
