@@ -2,7 +2,19 @@ import '../styles/main.css'
 import * as THREE from 'three';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
 import{boxTrigger} from './user-events.js'
-
+//initialize images
+import backgroundUrl from '../images/8k_stars_milky_way.jpg'
+import sunTextureUrl from '../images/8k_sun.jpg';
+import mercuryTextureUrl from '../images/8k_mercury.jpg';
+import venusTextureUrl from '../images/8k_venus_surface.jpg';
+import earthTextureUrl from '../images/8k_earth_nightmap.jpg';
+import moonTextureUrl from '../images/8k_moon.jpg';
+import marsTextureUrl from '../images/8k_mars.jpg';
+import jupiterTextureUrl from '../images/8k_jupiter.jpg';
+import saturnTextureUrl from '../images/8k_saturn.jpg';
+import saturnRingsTextureUrl from '../images/SaturnRings.png';
+import uranusTextureUrl from '../images/2k_uranus.jpg';
+import neptuneTextureUrl from '../images/2k_neptune.jpg';
 
 /*Global Variable*/
 const [planetPosition] = Array([0, 57.9, 108.2, 149.6, 160, 227.6, 778.6, 1433.5, 2872.5, 4495.1]);
@@ -20,6 +32,7 @@ const [SunID, MercuryID, VenusID, EarthID, MoonID, MarsID, JupiterID, SaturnID, 
     document.getElementById('Neptun'),
 ];
 const Box = [SunID, MercuryID, VenusID, EarthID, MoonID, MarsID, JupiterID, SaturnID, UranusID, NeptunID];
+
 
 
 /*Initialize scene*/
@@ -45,11 +58,11 @@ const lightUniversal = new THREE.DirectionalLight(0xffffff, 0.1);
 lightUniversal.target.position.set(-5, 0, 0);
 
 //background
-const backgroundTexture = new THREE.TextureLoader().load('images/8k_stars_milky_way.jpg');
+const backgroundTexture = new THREE.TextureLoader().load(backgroundUrl);
 scene.background = backgroundTexture;
 
 //sun
-const sunTexture = new THREE.TextureLoader().load('images/8k_sun.jpg');
+const sunTexture = new THREE.TextureLoader().load(sunTextureUrl);
 const sun = new THREE.Mesh(
     new THREE.SphereGeometry(27.8, 100, 100),
     //139.14 radius to scale
@@ -60,7 +73,7 @@ sun.position.set(0, 0, planetPosition[0]);
 
 
 //mercury
-const mercuryTexture = new THREE.TextureLoader().load('images/8k_mercury.jpg');
+const mercuryTexture = new THREE.TextureLoader().load(mercuryTextureUrl);
 const mercury = new THREE.Mesh(
     new THREE.SphereGeometry(0.4879, 32, 32),
     new THREE.MeshBasicMaterial({
@@ -69,7 +82,7 @@ const mercury = new THREE.Mesh(
 mercury.position.set(0, 0, planetPosition[1]);
 
 //venus
-const venusTexture = new THREE.TextureLoader().load('images/8k_venus_surface.jpg');
+const venusTexture = new THREE.TextureLoader().load(venusTextureUrl);
 const venus = new THREE.Mesh(
     new THREE.SphereGeometry(1.2104, 50, 50),
     new THREE.MeshBasicMaterial({
@@ -78,7 +91,7 @@ const venus = new THREE.Mesh(
 venus.position.set(0, 0, planetPosition[2]);
 
 //earth
-const earthTexture = new THREE.TextureLoader().load('images/8k_earth_nightmap.jpg');
+const earthTexture = new THREE.TextureLoader().load(earthTextureUrl);
 const eath = new THREE.Mesh(
     new THREE.SphereGeometry(1.2756, 100, 100),
     new THREE.MeshBasicMaterial({
@@ -87,7 +100,7 @@ const eath = new THREE.Mesh(
 eath.position.set(0, 0, planetPosition[3]);
 
 //moon
-const moonTexture = new THREE.TextureLoader().load('images/8k_moon.jpg');
+const moonTexture = new THREE.TextureLoader().load(moonTextureUrl);
 const moon = new THREE.Mesh(
     new THREE.SphereGeometry(0.1737, 32, 32),
     new THREE.MeshBasicMaterial({
@@ -96,7 +109,7 @@ const moon = new THREE.Mesh(
 moon.position.set(0, 0, planetPosition[4]);
 
 //mars
-const marsTexture = new THREE.TextureLoader().load('images/8k_mars.jpg');
+const marsTexture = new THREE.TextureLoader().load(marsTextureUrl);
 const mars = new THREE.Mesh(
     new THREE.SphereGeometry(0.6792, 50, 50),
     new THREE.MeshBasicMaterial({
@@ -105,7 +118,7 @@ const mars = new THREE.Mesh(
 mars.position.set(0, 0, planetPosition[5]);
 
 //jupiter
-const jupiterTexture = new THREE.TextureLoader().load('images/8k_jupiter.jpg');
+const jupiterTexture = new THREE.TextureLoader().load(jupiterTextureUrl);
 const jupiter = new THREE.Mesh(
     new THREE.SphereGeometry(14.2984, 50, 50),
     new THREE.MeshBasicMaterial({
@@ -114,7 +127,7 @@ const jupiter = new THREE.Mesh(
 jupiter.position.set(0, 0, planetPosition[6]);
 
 //saturn
-const saturnTexture = new THREE.TextureLoader().load('images/8k_saturn.jpg');
+const saturnTexture = new THREE.TextureLoader().load(saturnTextureUrl);
 const saturn = new THREE.Mesh(
     new THREE.SphereGeometry(12.0536, 50, 50),
     new THREE.MeshBasicMaterial({
@@ -122,8 +135,8 @@ const saturn = new THREE.Mesh(
     }));
 saturn.position.set(0, 0, planetPosition[7]);
 
-//saturnring
-const saturnRingTexture = new THREE.TextureLoader().load('images/SaturnRings.png')
+//saturnRing
+const saturnRingTexture = new THREE.TextureLoader().load(saturnRingsTextureUrl)
 const saturnRing = new THREE.Mesh(
     new THREE.RingGeometry(17, 28, 2000),
     new THREE.MeshBasicMaterial({
@@ -134,7 +147,7 @@ saturnRing.position.set(0, 0, planetPosition[7]);
 saturnRing.rotation.set(27, 0, 0);
 
 //uranus
-const uranusTexture = new THREE.TextureLoader().load('images/2k_uranus.jpg');
+const uranusTexture = new THREE.TextureLoader().load(uranusTextureUrl);
 const uranus = new THREE.Mesh(
     new THREE.SphereGeometry(5.1118, 50, 50),
     new THREE.MeshBasicMaterial({
@@ -143,7 +156,7 @@ const uranus = new THREE.Mesh(
 uranus.position.set(0, 0, planetPosition[8]);
 
 //Neptune
-const neptuneTexture = new THREE.TextureLoader().load('images/2k_neptune.jpg');
+const neptuneTexture = new THREE.TextureLoader().load(neptuneTextureUrl);
 const neptune = new THREE.Mesh(
     new THREE.SphereGeometry(4.9528, 50, 50),
     new THREE.MeshBasicMaterial({

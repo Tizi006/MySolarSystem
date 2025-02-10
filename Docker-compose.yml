@@ -1,0 +1,10 @@
+version: '3.9'
+
+services:
+  solar-system:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: solar-system:latest
+    ports:
+      - "80:80"
