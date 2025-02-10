@@ -1,12 +1,12 @@
 import '../styles/main.css'
 import * as THREE from 'three';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
-import{Boxtrigger} from './user-events.js'
+import{boxTrigger} from './user-events.js'
 
 
 /*Global Variable*/
-const [planetposition] = Array([0, 57.9, 108.2, 149.6, 160, 227.6, 778.6, 1433.5, 2872.5, 4495.1]);
-const [triggerpoints] = Array([planetposition[1] - 15, planetposition[2] - 15, planetposition[3] - 15, planetposition[4] - 2, planetposition[5] - 20, planetposition[6] - 300, planetposition[7] - 300, planetposition[8] - 700, planetposition[9] - 1000]);
+const [planetPosition] = Array([0, 57.9, 108.2, 149.6, 160, 227.6, 778.6, 1433.5, 2872.5, 4495.1]);
+const [triggerPoints] = Array([planetPosition[1] - 15, planetPosition[2] - 15, planetPosition[3] - 15, planetPosition[4] - 2, planetPosition[5] - 20, planetPosition[6] - 300, planetPosition[7] - 300, planetPosition[8] - 700, planetPosition[9] - 1000]);
 const [SunID, MercuryID, VenusID, EarthID, MoonID, MarsID, JupiterID, SaturnID, UranusID, NeptunID] = [
     document.getElementById('Sun'),
     document.getElementById('Mercury'),
@@ -33,7 +33,7 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.render(scene, camera);
 camera.position.set(40, 0, -100)
 
-//orbitcontrol
+//orbit control
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableZoom = false;
 controls.enableRotate = false;
@@ -56,7 +56,7 @@ const sun = new THREE.Mesh(
     new THREE.MeshBasicMaterial({
         map: sunTexture
     }));
-sun.position.set(0, 0, planetposition[0]);
+sun.position.set(0, 0, planetPosition[0]);
 
 
 //mercury
@@ -66,7 +66,7 @@ const mercury = new THREE.Mesh(
     new THREE.MeshBasicMaterial({
         map: mercuryTexture
     }));
-mercury.position.set(0, 0, planetposition[1]);
+mercury.position.set(0, 0, planetPosition[1]);
 
 //venus
 const venusTexture = new THREE.TextureLoader().load('images/8k_venus_surface.jpg');
@@ -75,7 +75,7 @@ const venus = new THREE.Mesh(
     new THREE.MeshBasicMaterial({
         map: venusTexture
     }));
-venus.position.set(0, 0, planetposition[2]);
+venus.position.set(0, 0, planetPosition[2]);
 
 //earth
 const earthTexture = new THREE.TextureLoader().load('images/8k_earth_nightmap.jpg');
@@ -84,7 +84,7 @@ const eath = new THREE.Mesh(
     new THREE.MeshBasicMaterial({
         map: earthTexture
     }));
-eath.position.set(0, 0, planetposition[3]);
+eath.position.set(0, 0, planetPosition[3]);
 
 //moon
 const moonTexture = new THREE.TextureLoader().load('images/8k_moon.jpg');
@@ -93,7 +93,7 @@ const moon = new THREE.Mesh(
     new THREE.MeshBasicMaterial({
         map: moonTexture
     }));
-moon.position.set(0, 0, planetposition[4]);
+moon.position.set(0, 0, planetPosition[4]);
 
 //mars
 const marsTexture = new THREE.TextureLoader().load('images/8k_mars.jpg');
@@ -102,7 +102,7 @@ const mars = new THREE.Mesh(
     new THREE.MeshBasicMaterial({
         map: marsTexture
     }));
-mars.position.set(0, 0, planetposition[5]);
+mars.position.set(0, 0, planetPosition[5]);
 
 //jupiter
 const jupiterTexture = new THREE.TextureLoader().load('images/8k_jupiter.jpg');
@@ -111,7 +111,7 @@ const jupiter = new THREE.Mesh(
     new THREE.MeshBasicMaterial({
         map: jupiterTexture
     }));
-jupiter.position.set(0, 0, planetposition[6]);
+jupiter.position.set(0, 0, planetPosition[6]);
 
 //saturn
 const saturnTexture = new THREE.TextureLoader().load('images/8k_saturn.jpg');
@@ -120,7 +120,7 @@ const saturn = new THREE.Mesh(
     new THREE.MeshBasicMaterial({
         map: saturnTexture
     }));
-saturn.position.set(0, 0, planetposition[7]);
+saturn.position.set(0, 0, planetPosition[7]);
 
 //saturnring
 const saturnRingTexture = new THREE.TextureLoader().load('images/SaturnRings.png')
@@ -130,7 +130,7 @@ const saturnRing = new THREE.Mesh(
         map: saturnRingTexture,
         side: THREE.DoubleSide
     }));
-saturnRing.position.set(0, 0, planetposition[7]);
+saturnRing.position.set(0, 0, planetPosition[7]);
 saturnRing.rotation.set(27, 0, 0);
 
 //uranus
@@ -140,16 +140,16 @@ const uranus = new THREE.Mesh(
     new THREE.MeshBasicMaterial({
         map: uranusTexture
     }));
-uranus.position.set(0, 0, planetposition[8]);
+uranus.position.set(0, 0, planetPosition[8]);
 
-//Neptun
+//Neptune
 const neptuneTexture = new THREE.TextureLoader().load('images/2k_neptune.jpg');
 const neptune = new THREE.Mesh(
     new THREE.SphereGeometry(4.9528, 50, 50),
     new THREE.MeshBasicMaterial({
         map: neptuneTexture
     }));
-neptune.position.set(0, 0, planetposition[9]);
+neptune.position.set(0, 0, planetPosition[9]);
 
 scene.add(light);
 scene.add(lightUniversal);
@@ -184,7 +184,7 @@ renderer.render(scene, camera);
 
 
 function setBoxVisibility(VisibleBox) {
-    if (Boxtrigger === true) {
+    if (boxTrigger === true) {
         for (let i = 0; i < Box.length; i++) {
            Box[i].style.visibility = 'hidden';
         }
@@ -211,36 +211,36 @@ function orbitObject(orbitingObject, centerObject, distance, angleSpeed) {
     orbitingObject.position.set(x, orbitingObject.position.y, z); // set the new position of the orbiting object
 }
 
-function getfocusedPlanet(t) {
+function getFocusedPlanet(t) {
     //sun
-    if (t < triggerpoints[0] && controls.target !== sun.position) {
+    if (t < triggerPoints[0] && controls.target !== sun.position) {
         setBoxVisibility(SunID);
         return sun.position;
-    } else if ((camera.position.z <= triggerpoints[1] && camera.position.z > triggerpoints[0]) && controls.target !== mercury.position) {
+    } else if ((camera.position.z <= triggerPoints[1] && camera.position.z > triggerPoints[0]) && controls.target !== mercury.position) {
         setBoxVisibility(MercuryID);
         return mercury.position;
-    } else if ((camera.position.z <= triggerpoints[2] && camera.position.z > triggerpoints[1]) && controls.target !== venus.position) {
+    } else if ((camera.position.z <= triggerPoints[2] && camera.position.z > triggerPoints[1]) && controls.target !== venus.position) {
         setBoxVisibility(VenusID);
         return venus.position;
-    } else if ((camera.position.z <= triggerpoints[3] && camera.position.z > triggerpoints[2]) && controls.target !== eath.position) {
+    } else if ((camera.position.z <= triggerPoints[3] && camera.position.z > triggerPoints[2]) && controls.target !== eath.position) {
         setBoxVisibility(EarthID);
         return eath.position;
-    } else if ((camera.position.z <= triggerpoints[4] && camera.position.z > triggerpoints[3]) && controls.target !== moon.position) {
+    } else if ((camera.position.z <= triggerPoints[4] && camera.position.z > triggerPoints[3]) && controls.target !== moon.position) {
         setBoxVisibility(MoonID);
         return moon.position;
-    } else if ((camera.position.z <= triggerpoints[5] && camera.position.z > triggerpoints[4]) && controls.target !== mars.position) {
+    } else if ((camera.position.z <= triggerPoints[5] && camera.position.z > triggerPoints[4]) && controls.target !== mars.position) {
         setBoxVisibility(MarsID);
         return mars.position;
-    } else if ((camera.position.z <= triggerpoints[6] && camera.position.z > triggerpoints[5]) && controls.target !== jupiter.position) {
+    } else if ((camera.position.z <= triggerPoints[6] && camera.position.z > triggerPoints[5]) && controls.target !== jupiter.position) {
         setBoxVisibility(JupiterID);
         return jupiter.position;
-    } else if ((camera.position.z <= triggerpoints[7] && camera.position.z > triggerpoints[6]) && controls.target !== saturn.position) {
+    } else if ((camera.position.z <= triggerPoints[7] && camera.position.z > triggerPoints[6]) && controls.target !== saturn.position) {
         setBoxVisibility(SaturnID);
         return saturn.position;
-    } else if ((camera.position.z <= triggerpoints[8] && camera.position.z > triggerpoints[7]) && controls.target !== uranus.position) {
+    } else if ((camera.position.z <= triggerPoints[8] && camera.position.z > triggerPoints[7]) && controls.target !== uranus.position) {
         setBoxVisibility(UranusID);
         return uranus.position;
-    } else if ((camera.position.z > triggerpoints[8]) && controls.target !== neptune.position) {
+    } else if ((camera.position.z > triggerPoints[8]) && controls.target !== neptune.position) {
         setBoxVisibility(NeptunID);
         return neptune.position;
     }
@@ -250,7 +250,7 @@ function getfocusedPlanet(t) {
 function animate() {
     requestAnimationFrame(animate);
     const t = (document.body.getBoundingClientRect().top) / 10 * -1;
-    const currentPlanetPosition = getfocusedPlanet(t);
+    const currentPlanetPosition = getFocusedPlanet(t);
 
     if (!((currentPlanetPosition - controls.target) > 0.1)) {
         controls.target.lerp(currentPlanetPosition, 0.05);
@@ -272,7 +272,7 @@ function animate() {
     moon.rotation.y -= 0.0016
 
     /*set camera fov*/
-    if (camera.position.z < triggerpoints[4] && camera.position.z > triggerpoints[3]) {
+    if (camera.position.z < triggerPoints[4] && camera.position.z > triggerPoints[3]) {
         camera.fov = incrementValue(camera.fov, 5);
     } else {
         camera.fov = incrementValue(camera.fov, 60)
@@ -295,46 +295,46 @@ function moveCamera() {
     }
 
 
-    if (camera.position.z < triggerpoints[0]) {
+    if (camera.position.z < triggerPoints[0]) {
         if (!((camera.position.x - 40 < 0.1) && (camera.position.x - 40 > -0.1))) {
             const targetPosition = new THREE.Vector3(40, camera.position.y, camera.position.z);
             camera.position.lerp(targetPosition, 0.1);
         }
-    } else if (camera.position.z < triggerpoints[1]) {
+    } else if (camera.position.z < triggerPoints[1]) {
         if (!((camera.position.x - 1.5 < 0.1) && (camera.position.x - 1.5 > -0.1))) {
             const targetPosition = new THREE.Vector3(1.5, camera.position.y, camera.position.z);
             camera.position.lerp(targetPosition, 0.1);
         }
-    } else if (camera.position.z < triggerpoints[2]) {
+    } else if (camera.position.z < triggerPoints[2]) {
         //  if(!((camera.position.x-10<0.1)&&(camera.position.x+10>-0.1))){
         const targetPosition = new THREE.Vector3(-2.7, camera.position.y, camera.position.z);
         camera.position.lerp(targetPosition, 0.1);
         //  }
-    } else if (camera.position.z < triggerpoints[3]) {
+    } else if (camera.position.z < triggerPoints[3]) {
         // if(!((camera.position.x-1.5<0.1)&&(camera.position.x-1.5>-0.1))){
         const targetPosition = new THREE.Vector3(3.3, camera.position.y, camera.position.z);
         camera.position.lerp(targetPosition, 0.1);
-    } else if (camera.position.z < triggerpoints[5]) {
+    } else if (camera.position.z < triggerPoints[5]) {
         // if(!((camera.position.x-1.5<0.1)&&(camera.position.x-1.5>-0.1))){
         const targetPosition = new THREE.Vector3(1.8, camera.position.y, camera.position.z);
         camera.position.lerp(targetPosition, 0.1);
         //   }
-    } else if (camera.position.z < triggerpoints[6]) {
+    } else if (camera.position.z < triggerPoints[6]) {
         // if(!((camera.position.x-1.5<0.1)&&(camera.position.x-1.5>-0.1))){
         const targetPosition = new THREE.Vector3(-30, camera.position.y, camera.position.z);
         camera.position.lerp(targetPosition, 0.1);
         //   }
-    } else if (camera.position.z < triggerpoints[7]) {
+    } else if (camera.position.z < triggerPoints[7]) {
         // if(!((camera.position.x-1.5<0.1)&&(camera.position.x-1.5>-0.1))){
         const targetPosition = new THREE.Vector3(30, camera.position.y, camera.position.z);
         camera.position.lerp(targetPosition, 0.1);
         //   }
-    } else if (camera.position.z < triggerpoints[8]) {
+    } else if (camera.position.z < triggerPoints[8]) {
         // if(!((camera.position.x-1.5<0.1)&&(camera.position.x-1.5>-0.1))){
         const targetPosition = new THREE.Vector3(16, camera.position.y, camera.position.z);
         camera.position.lerp(targetPosition, 0.1);
         //   }
-    } else if (camera.position.z < triggerpoints[9]) {
+    } else if (camera.position.z < triggerPoints[9]) {
         // if(!((camera.position.x-1.5<0.1)&&(camera.position.x-1.5>-0.1))){
         const targetPosition = new THREE.Vector3(15, camera.position.y, camera.position.z);
         camera.position.lerp(targetPosition, 0.1);

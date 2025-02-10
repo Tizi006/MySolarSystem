@@ -65,7 +65,7 @@ svg {
     align-self: flex-start;
     padding: 10px;
     max-height: 190px;
-    overflow: scroll;
+    overflow: auto;
 }
 
 .menu-bar {
