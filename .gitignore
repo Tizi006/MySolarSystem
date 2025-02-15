@@ -23,6 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 
-/images/2k/
-/images/8k/
-/images/planetPictures/raw/
+images/textures/2k/
+images/textures/8k/
+images/planetPictures/raw/
