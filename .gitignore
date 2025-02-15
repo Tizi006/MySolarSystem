@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+images/textures/2k/
+images/textures/8k/
+images/planetPictures/raw/
