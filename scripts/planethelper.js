@@ -1,16 +1,16 @@
 import * as Three from 'three';
 //initialize images
-import sunTextureUrl from '../images/8k_sun.jpg';
-import mercuryTextureUrl from '../images/8k_mercury.jpg';
-import venusTextureUrl from '../images/8k_venus_surface.jpg';
-import earthTextureUrl from '../images/8k_earth_nightmap.jpg';
-import moonTextureUrl from '../images/8k_moon.jpg';
-import marsTextureUrl from '../images/8k_mars.jpg';
-import jupiterTextureUrl from '../images/8k_jupiter.jpg';
-import saturnTextureUrl from '../images/8k_saturn.jpg';
-import saturnRingsTextureUrl from '../images/SaturnRings.png';
-import uranusTextureUrl from '../images/2k_uranus.jpg';
-import neptuneTextureUrl from '../images/2k_neptune.jpg';
+import sunTextureUrl from '../images/textures/2kCompressed/2k_sun.webp';
+import mercuryTextureUrl from '../images/textures/2kCompressed/2k_mercury.webp';
+import venusTextureUrl from '../images/textures/2kCompressed/2k_venus_surface.webp';
+import earthTextureUrl from '../images/textures/2kCompressed/2k_earth_nightmap.webp';
+import moonTextureUrl from '../images/textures/2kCompressed/2k_moon.webp';
+import marsTextureUrl from '../images/textures/2kCompressed/2k_mars.webp';
+import jupiterTextureUrl from '../images/textures/2kCompressed/2k_jupiter.webp';
+import saturnTextureUrl from '../images/textures/2kCompressed/2k_saturn.webp';
+import saturnRingsTextureUrl from '../images/textures/2kCompressed/SaturnRings.webp';
+import uranusTextureUrl from '../images/textures/2kCompressed/2k_uranus.webp';
+import neptuneTextureUrl from '../images/textures/2kCompressed/2k_neptune.webp';
 
 
 const planetPosition = [0, 57.9, 108.2, 149.6, 160, 227.6, 778.6, 1433.5, 2872.5, 4495.1];

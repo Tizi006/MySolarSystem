@@ -4,7 +4,7 @@ import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
 import {boxTrigger} from './user-events.js'
 import * as ph from './planethelper.js'
 //initialize images
-import backgroundUrl from '../images/8k_stars_milky_way.jpg'
+import backgroundUrl from '../images/textures/2kCompressed/2k_stars_milky_way.webp'
 
 /*Initialize scene*/
 const scene = new Three.Scene();
