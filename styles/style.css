@@ -81,7 +81,7 @@ svg {
     grid-template-rows: repeat(12, 1fr);
 
 }
-#info-pop-in{
+#pop-in{
     position: fixed;
     top: 0;
     right: 0;
@@ -93,15 +93,15 @@ svg {
     padding: 80px 20px 20px;
     visibility: hidden;
     opacity: 0;
-    transition: opacity 1s;
+    transition: opacity 1s, visibility 1s;
 }
 
 /*IDs*/
-#Sun, #Mercury, #Venus, #Earth, #Moon, #Mars, #Jupiter, #Saturn, #Neptun, #Uranus {
+#Sun, #Mercury, #Venus, #Earth, #Moon, #Mars, #Jupiter, #Saturn, #Neptune, #Uranus {
     opacity: 100;
 }
 
-/*placehodler*/
+/*placeholder*/
 .placeholder-item-left, .placeholder-item-right {
     height: 50vh;
 }

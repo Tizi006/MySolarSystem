@@ -1,10 +1,10 @@
 import '../styles/main.css'
 import * as Three from 'three';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
-import {boxTrigger} from './user-events.js'
 import * as ph from './planethelper.js'
 //initialize images
 import backgroundUrl from '../images/textures/2kCompressed/2k_stars_milky_way.webp'
+import {boxTrigger, getCurrentTimeIncrement} from "./user-events.js";
 
 /*Initialize scene*/
 const scene = new Three.Scene();
@@ -82,7 +82,6 @@ function animate() {
     if (!((currentPlanetPosition - controls.target) > 0.1)) {
         controls.target.lerp(currentPlanetPosition, 0.05);
     }
-    ph.stepRotation();
     /*set camera fov*/
     if (camera.position.z < ph.triggerPoints[4] && camera.position.z > ph.triggerPoints[3]) {
         camera.fov = incrementValue(camera.fov, 5);
@@ -96,6 +95,9 @@ function animate() {
     renderer.render(scene, camera);
 }
 
+setInterval(() => {
+    ph.stepRotation(getCurrentTimeIncrement()/100);
+},1000/100);
 
 function moveCamera() {
     //set camera position

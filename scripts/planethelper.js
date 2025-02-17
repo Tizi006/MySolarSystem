@@ -25,17 +25,29 @@ class Planet {
                 map: texture
             }));
         this.mesh.position.set(position.x, position.y, position.z)
+        this.accumulatedAngle = 0;
     }
 
-    rotate(radians) {
-        this.mesh.rotation.y += radians
+    rotate(rotationPeriod, minuteTimeStep) {
+        //euler angle in degrees: 360/minutes
+        const degreesPerMinute = 360/rotationPeriod
+        const radiansPerStep = (degreesPerMinute) * (Math.PI / 180)*minuteTimeStep;
+        this.mesh.rotation.y += radiansPerStep
+        this.mesh.rotation.y = this.mesh.rotation.y%(2 * Math.PI)
     }
 
-    orbitObject({mesh: {position: centerPosition}}, distance, angleSpeed) {
-        const angle = angleSpeed * Date.now() * 0.01; // calculate angle based on time and angle speed
-        const x = centerPosition.x + distance * Math.cos(angle); // calculate new x position based on distance and angle
-        const z = centerPosition.z + distance * Math.sin(angle); // calculate new z position based on distance and angle
-        this.mesh.position.set(x, this.mesh.position.y, z); // set the new position of the orbiting object
+
+    //simplified round orbit with 0 y
+    orbitObject({mesh: {position: centerPosition}}, distance, rotationPeriod, minuteTimeStep) {
+        const degreesPerMinute = 360/rotationPeriod
+        const radiansPerStep = (degreesPerMinute) * (Math.PI / 180)*minuteTimeStep;
+        this.accumulatedAngle +=radiansPerStep
+        this.accumulatedAngle =this.accumulatedAngle%(2 * Math.PI)
+
+        const x = centerPosition.x + distance * Math.cos(this.accumulatedAngle);
+        const z = centerPosition.z + distance * Math.sin(this.accumulatedAngle);
+        const newPos = new Three.Vector3(x, this.mesh.position.y, z)
+        this.mesh.position.lerp(newPos,0.5); // set the new position of the orbiting object
     }
 }
 
@@ -134,21 +146,33 @@ export const planets = [
 ];
 
 
-export function stepRotation() {
-    //rotations: (1/(days*20))
-    sun.rotate((1 / 270 / 2))
-    mercury.rotate((1 / 588) / 2)
-    venus.rotate((1 / 2430) / 2)
-    earth.rotate((1 / 10) / 2)
-    mars.rotate((1 / 10) / 2)
-    jupiter.rotate((1 / 3.7) / 2)
-    saturn.rotate((1 / 4) / 2)
+export function stepRotation(minuteTimeStep) {
+    /*rotation values are calculated by:
+    Sun: 25d 9h 7m
+    Mercury: 58d 16h
+    Venus: 243d 26m
+    Earth: 23h 56m
+    Moon: locked:  27d 7h 41m
+    Mars: 24h 36m
+    Jupiter: 9h 55m
+    Saturn: 10h 33m
+    Uranus: 17h 14m
+    Neptune: 16h
+    Calculated value in minutes:
+    */
+    sun.rotate(36567,minuteTimeStep)
+    mercury.rotate(84960,minuteTimeStep)
+    venus.rotate(350906,minuteTimeStep)
+    earth.rotate(1436,minuteTimeStep)
+    mars.rotate(1476,minuteTimeStep)
+    jupiter.rotate(595,minuteTimeStep)
+    saturn.rotate(633,minuteTimeStep)
     saturnRing.rotation.z -= 0.4;
-    uranus.rotate(-(1 / 8) / 2)
-    neptune.rotate((1 / 7.5) / 2)
+    uranus.rotate(-1034,minuteTimeStep)
+    neptune.rotate(960,minuteTimeStep)
 
-    moon.orbitObject(earth, 3.5, 0.016);
-    moon.rotate(-0.0016)
+    moon.orbitObject(earth, 3.5, 39341, minuteTimeStep);
+    moon.rotate(-39341,minuteTimeStep)
 }
 
 export function getFocusedPlanetID(camera, controls) {
