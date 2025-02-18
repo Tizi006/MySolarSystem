@@ -11,14 +11,14 @@ import saturnTextureUrl from '../images/textures/2kCompressed/2k_saturn.webp';
 import saturnRingsTextureUrl from '../images/textures/2kCompressed/SaturnRings.webp';
 import uranusTextureUrl from '../images/textures/2kCompressed/2k_uranus.webp';
 import neptuneTextureUrl from '../images/textures/2kCompressed/2k_neptune.webp';
-import {CylinderGeometry} from "three";
 
 
 const planetPosition = [0, 57.9, 108.2, 149.6, 160, 227.6, 778.6, 1433.5, 2872.5, 4495.1];
 export const triggerPoints = [planetPosition[1] - 15, planetPosition[2] - 15, planetPosition[3] - 15, planetPosition[4] - 2, planetPosition[5] - 20, planetPosition[6] - 300, planetPosition[7] - 300, planetPosition[8] - 700, planetPosition[9] - 1000];
 
 class Planet {
-    constructor(sphereGeometry, textureUrl, position) {
+    constructor(sphereGeometry, textureUrl, position, axialTiltDegrees=0) {
+        //planet
         const texture = new Three.TextureLoader().load(textureUrl);
         this.mesh = new Three.Mesh(
             sphereGeometry,
@@ -26,13 +26,16 @@ class Planet {
                 map: texture
             }));
         this.mesh.position.set(position.x, position.y, position.z)
+        this.mesh.rotation.x = axialTiltDegrees* (Math.PI / 180)
         this.accumulatedAngle = 0;
+        //axel
         const axelWidth =sphereGeometry.parameters.radius *0.02
         this.rotationAxel = new Three.Mesh(
             new Three.CylinderGeometry(axelWidth, axelWidth, sphereGeometry.parameters.radius * 4, 5),
             new Three.MeshBasicMaterial({color: 0x00ff44})
         )
         this.rotationAxel.position.set(position.x, position.y, position.z)
+        this.rotationAxel.rotation.x = axialTiltDegrees* (Math.PI / 180)
         this.rotationAxel.visible =false;
     }
 
@@ -52,7 +55,7 @@ class Planet {
     //simplified round orbit with 0 y
     orbitObject({mesh: {position: centerPosition}}, distance, rotationPeriod, minuteTimeStep) {
         const degreesPerMinute = 360 / rotationPeriod
-        const radiansPerStep = (degreesPerMinute) * (Math.PI / 180) * minuteTimeStep;
+        const radiansPerStep = degreesPerMinute * (Math.PI / 180) * minuteTimeStep;
         this.accumulatedAngle += radiansPerStep
         this.accumulatedAngle = this.accumulatedAngle % (2 * Math.PI)
 
@@ -65,7 +68,7 @@ class Planet {
 }
 
 class Donut {
-    constructor(ringGeometry, textureUrl, centerPosition) {
+    constructor(ringGeometry, textureUrl, centerPosition,axialTiltDegrees=0) {
         const texture = new Three.TextureLoader().load(textureUrl);
         this.mesh = new Three.Mesh(
             ringGeometry,
@@ -74,12 +77,13 @@ class Donut {
                 side: Three.DoubleSide
             }));
         this.mesh.position.set(centerPosition.x, centerPosition.y, centerPosition.z)
+        this.mesh.rotation.x =(axialTiltDegrees-90)* (Math.PI / 180)
     }
 
     rotate(rotationPeriod, minuteTimeStep) {
         //euler angle in degrees: 360/minutes
         const degreesPerMinute = 360 / rotationPeriod
-        const radiansPerStep = (degreesPerMinute) * (Math.PI / 180) * minuteTimeStep;
+        const radiansPerStep = degreesPerMinute * (Math.PI / 180) * minuteTimeStep;
         this.mesh.rotation.z += radiansPerStep
         this.mesh.rotation.z = this.mesh.rotation.z % (2 * Math.PI)
     }
@@ -90,77 +94,88 @@ class Donut {
 export const sun = new Planet(
     new Three.SphereGeometry(27.8, 100, 100),
     sunTextureUrl,
-    new Three.Vector3(0, 0, planetPosition[0])
+    new Three.Vector3(0, 0, planetPosition[0]),
+    7.25
 )
 
 // Mercury
 export const mercury = new Planet(
     new Three.SphereGeometry(0.4879, 32, 32),
     mercuryTextureUrl,
-    new Three.Vector3(0, 0, planetPosition[1])
+    new Three.Vector3(0, 0, planetPosition[1]),
+    0.03
 );
 
 // Venus
 export const venus = new Planet(
     new Three.SphereGeometry(1.2104, 50, 50),
     venusTextureUrl,
-    new Three.Vector3(0, 0, planetPosition[2])
+    new Three.Vector3(0, 0, planetPosition[2]),
+    -2.64
 );
 
 // Earth
 export const earth = new Planet(
     new Three.SphereGeometry(1.2756, 100, 100),
     earthTextureUrl,
-    new Three.Vector3(0, 0, planetPosition[3])
+    new Three.Vector3(0, 0, planetPosition[3]),
+    23.44
 );
 
 // Moon
 export const moon = new Planet(
     new Three.SphereGeometry(0.1737, 32, 32),
     moonTextureUrl,
-    new Three.Vector3(0, 0, planetPosition[4])
+    new Three.Vector3(0, 0, planetPosition[4]),
+    6.68
 );
 
 // Mars
 export const mars = new Planet(
     new Three.SphereGeometry(0.6792, 50, 50),
     marsTextureUrl,
-    new Three.Vector3(0, 0, planetPosition[5])
+    new Three.Vector3(0, 0, planetPosition[5]),
+    25.19
 );
 
 // Jupiter
 export const jupiter = new Planet(
     new Three.SphereGeometry(14.2984, 50, 50),
     jupiterTextureUrl,
-    new Three.Vector3(0, 0, planetPosition[6])
+    new Three.Vector3(0, 0, planetPosition[6]),
+    3.13
 );
 
 // Saturn
 export const saturn = new Planet(
     new Three.SphereGeometry(12.0536, 50, 50),
     saturnTextureUrl,
-    new Three.Vector3(0, 0, planetPosition[7])
+    new Three.Vector3(0, 0, planetPosition[7]),
+    26.73
 );
 
 //saturnRing
 export const saturnRing = new Donut(
     new Three.RingGeometry(17, 28, 2000),
     saturnRingsTextureUrl,
-    new Three.Vector3(0, 0, planetPosition[7])
+    new Three.Vector3(0, 0, planetPosition[7]),
+    26.73
 )
 
 // Uranus
 export const uranus = new Planet(
     new Three.SphereGeometry(5.1118, 50, 50),
     uranusTextureUrl,
-    new Three.Vector3(0, 0, planetPosition[8])
+    new Three.Vector3(0, 0, planetPosition[8]),
+    -82.23
 );
 
 // Neptune
 export const neptune = new Planet(
     new Three.SphereGeometry(4.9528, 50, 50),
     neptuneTextureUrl,
-    new Three.Vector3(0, 0, planetPosition[9])
+    new Three.Vector3(0, 0, planetPosition[9]),
+    28.32
 );
 
 export const planets = [
@@ -194,13 +209,13 @@ export function stepRotation(minuteTimeStep) {
     */
     sun.rotate(36567, minuteTimeStep)
     mercury.rotate(84960, minuteTimeStep)
-    venus.rotate(350906, minuteTimeStep)
+    venus.rotate(-350906, minuteTimeStep)
     earth.rotate(1436, minuteTimeStep)
     mars.rotate(1476, minuteTimeStep)
     jupiter.rotate(595, minuteTimeStep)
     saturn.rotate(633, minuteTimeStep)
     saturnRing.rotate(720, minuteTimeStep)
-    uranus.rotate(-1034, minuteTimeStep)
+    uranus.rotate(1034, minuteTimeStep)
     neptune.rotate(960, minuteTimeStep)
 
     moon.orbitObject(earth, 3.5, 39341, minuteTimeStep);

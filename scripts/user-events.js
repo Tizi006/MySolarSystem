@@ -125,6 +125,7 @@ export function getCurrentTimeIncrement() {
 }
 
 const AxelCheckBox = document.getElementById('toggle-rotation-axel');
+ph.planets.forEach(p=>p.rotationAxel.visible= AxelCheckBox.checked)
 AxelCheckBox.addEventListener('change', () => {
     ph.planets.forEach(p=>p.rotationAxel.visible= AxelCheckBox.checked)
 });
