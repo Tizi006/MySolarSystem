@@ -129,7 +129,8 @@ export const moon = new Planet(
     new Three.Vector3(0, 0, planetPosition[4]),
     6.68
 );
-
+//initially rotate moon to approximately face the correct side to the earth
+moon.mesh.rotation.y =Math.PI
 // Mars
 export const mars = new Planet(
     new Three.SphereGeometry(0.6792, 50, 50),
