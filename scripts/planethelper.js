@@ -50,6 +50,26 @@ class Planet {
         this.mesh.position.lerp(newPos,0.5); // set the new position of the orbiting object
     }
 }
+class Donut{
+    constructor(ringGeometry, textureUrl, centerPosition) {
+        const texture = new Three.TextureLoader().load(textureUrl);
+        this.mesh = new Three.Mesh(
+            ringGeometry,
+            new Three.MeshBasicMaterial({
+                map: texture,
+                side: Three.DoubleSide
+            }));
+        this.mesh.position.set(centerPosition.x, centerPosition.y, centerPosition.z)
+    }
+    rotate(rotationPeriod, minuteTimeStep) {
+        //euler angle in degrees: 360/minutes
+        const degreesPerMinute = 360/rotationPeriod
+        const radiansPerStep = (degreesPerMinute) * (Math.PI / 180)*minuteTimeStep;
+        this.mesh.rotation.z += radiansPerStep
+        this.mesh.rotation.z = this.mesh.rotation.z%(2 * Math.PI)
+    }
+}
+
 
 //sun
 export const sun = new Planet(
@@ -108,15 +128,11 @@ export const saturn = new Planet(
 );
 
 //saturnRing
-const saturnRingTexture = new Three.TextureLoader().load(saturnRingsTextureUrl)
-export const saturnRing = new Three.Mesh(
+export const saturnRing = new Donut(
     new Three.RingGeometry(17, 28, 2000),
-    new Three.MeshBasicMaterial({
-        map: saturnRingTexture,
-        side: Three.DoubleSide
-    }));
-saturnRing.position.set(0, 0, planetPosition[7]);
-saturnRing.rotation.set(27, 0, 0);
+    saturnRingsTextureUrl,
+    new Three.Vector3(0, 0, planetPosition[7])
+)
 
 // Uranus
 export const uranus = new Planet(
@@ -156,6 +172,7 @@ export function stepRotation(minuteTimeStep) {
     Mars: 24h 36m
     Jupiter: 9h 55m
     Saturn: 10h 33m
+    Saturn main rings: 5h-14h =>using 12h
     Uranus: 17h 14m
     Neptune: 16h
     Calculated value in minutes:
@@ -167,7 +184,7 @@ export function stepRotation(minuteTimeStep) {
     mars.rotate(1476,minuteTimeStep)
     jupiter.rotate(595,minuteTimeStep)
     saturn.rotate(633,minuteTimeStep)
-    saturnRing.rotation.z -= 0.4;
+    saturnRing.rotate(720,minuteTimeStep)
     uranus.rotate(-1034,minuteTimeStep)
     neptune.rotate(960,minuteTimeStep)
 

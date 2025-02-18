@@ -44,7 +44,7 @@ scene.add(ph.moon.mesh);
 scene.add(ph.mars.mesh);
 scene.add(ph.jupiter.mesh);
 scene.add(ph.saturn.mesh);
-scene.add(ph.saturnRing);
+scene.add(ph.saturnRing.mesh);
 scene.add(ph.uranus.mesh);
 scene.add(ph.neptune.mesh);
 renderer.render(scene, camera);
