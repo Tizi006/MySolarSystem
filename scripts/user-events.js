@@ -59,9 +59,11 @@ function updatePopInVisibility() {
     const display = document.getElementById('pop-in');
     const info = document.getElementById('info-display');
     const settings = document.getElementById('settings-display');
+    const contentBoxes = document.querySelectorAll('.contentBox-right,.contentBox-left');
     if (infoTrigger || settingsTrigger) {
         display.style.visibility = 'visible';
         display.style.opacity = '100';
+        contentBoxes.forEach((box) =>{box.classList.add('shift-left')})
         if (infoTrigger) {
             info.style.visibility = 'visible';
             info.style.opacity = '100';
@@ -72,7 +74,7 @@ function updatePopInVisibility() {
         } else {
             settings.style.visibility = 'visible';
             settings.style.opacity = '100';
-            settings.style.display = 'block';
+            settings.style.display = 'flex';
             info.style.opacity = '0';
             info.style.visibility = 'hidden';
             info.style.display = 'none';
@@ -80,6 +82,7 @@ function updatePopInVisibility() {
     } else {
         display.style.opacity = '0';
         display.style.visibility = 'hidden';
+        contentBoxes.forEach((box) =>{box.classList.remove('shift-left')})
     }
 
 
