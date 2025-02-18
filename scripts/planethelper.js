@@ -3,7 +3,9 @@ import * as Three from 'three';
 import sunTextureUrl from '../images/textures/2kCompressed/2k_sun.webp';
 import mercuryTextureUrl from '../images/textures/2kCompressed/2k_mercury.webp';
 import venusTextureUrl from '../images/textures/2kCompressed/2k_venus_surface.webp';
-import earthTextureUrl from '../images/textures/2kCompressed/2k_earth_nightmap.webp';
+import venusAtmosphereTextureUrl from "../images/textures/2kCompressed/2k_venus_atmosphere_alpha.webp";
+import earthTextureUrl from '../images/textures/2kCompressed/2k_earth_daymap.webp';
+import earthCloudsTextureUrl from "../images/textures/2kCompressed/2k_earth_clouds_alpha.webp";
 import moonTextureUrl from '../images/textures/2kCompressed/2k_moon.webp';
 import marsTextureUrl from '../images/textures/2kCompressed/2k_mars.webp';
 import jupiterTextureUrl from '../images/textures/2kCompressed/2k_jupiter.webp';
@@ -23,7 +25,7 @@ class Planet {
         this.mesh = new Three.Mesh(
             sphereGeometry,
             new Three.MeshBasicMaterial({
-                map: texture
+                map: texture,
             }));
         this.mesh.position.set(position.x, position.y, position.z)
         this.mesh.rotation.x = axialTiltDegrees* (Math.PI / 180)
@@ -43,14 +45,30 @@ class Planet {
         scene.add(this.mesh);
         scene.add(this.rotationAxel);
     }
+    addAtmosphere(distance,textureUrl,speedPercent,scene){
+        this.atmosphereSpeedPercent =speedPercent
+        const texture = new Three.TextureLoader().load(textureUrl);
+        this.atmosphere = new Three.Mesh(
+            new Three.SphereGeometry(this.mesh.geometry.parameters.radius+distance, this.mesh.geometry.parameters.widthSegments, this.mesh.geometry.parameters.heightSegments),
+            new Three.MeshBasicMaterial({
+                map: texture,
+                transparent: true
+            }));
+        this.atmosphere.position.set(this.mesh.position.x,this.mesh.position.y,this.mesh.position.z)
+        this.atmosphere.rotation.x = this.mesh.rotation.x
+        scene.add(this.atmosphere)
+    }
     rotate(rotationPeriod, minuteTimeStep) {
         //euler angle in degrees: 360/minutes
         const degreesPerMinute = 360 / rotationPeriod
         const radiansPerStep = (degreesPerMinute) * (Math.PI / 180) * minuteTimeStep;
         this.mesh.rotation.y += radiansPerStep
         this.mesh.rotation.y = this.mesh.rotation.y % (2 * Math.PI)
+        if(this.atmosphere){
+            this.atmosphere.rotation.y += radiansPerStep+radiansPerStep*(this.atmosphereSpeedPercent/100)
+            this.atmosphere.rotation.y = this.atmosphere.rotation.y % (2 * Math.PI)
+        }
     }
-
 
     //simplified round orbit with 0 y
     orbitObject({mesh: {position: centerPosition}}, distance, rotationPeriod, minuteTimeStep) {
@@ -64,6 +82,7 @@ class Planet {
         const newPos = new Three.Vector3(x, this.mesh.position.y, z)
         this.mesh.position.lerp(newPos, 0.5); // set the new position of the orbiting object
         this.rotationAxel.position.lerp(newPos, 0.5)
+        if(this.atmosphere){this.atmosphere.position.lerp(newPos, 0.5)}
     }
 }
 
@@ -74,7 +93,8 @@ class Donut {
             ringGeometry,
             new Three.MeshBasicMaterial({
                 map: texture,
-                side: Three.DoubleSide
+                side: Three.DoubleSide,
+                transparent: true
             }));
         this.mesh.position.set(centerPosition.x, centerPosition.y, centerPosition.z)
         this.mesh.rotation.x =(axialTiltDegrees-90)* (Math.PI / 180)
@@ -113,6 +133,7 @@ export const venus = new Planet(
     new Three.Vector3(0, 0, planetPosition[2]),
     -2.64
 );
+export function addVenusAtmosphere(scene){venus.addAtmosphere(0.005,venusAtmosphereTextureUrl,25,scene)}
 
 // Earth
 export const earth = new Planet(
@@ -121,6 +142,7 @@ export const earth = new Planet(
     new Three.Vector3(0, 0, planetPosition[3]),
     23.44
 );
+export function addEarthAtmosphere(scene){earth.addAtmosphere(0.005,earthCloudsTextureUrl,25,scene)}
 
 // Moon
 export const moon = new Planet(
