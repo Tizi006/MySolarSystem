@@ -1,4 +1,6 @@
-export let boxTrigger = true;
+import * as ph from './planethelper.js'
+
+let boxTrigger = true;
 const ToggleBoxButton = document.querySelector('#Toggle-Box-Button')
 ToggleBoxButton.addEventListener('click', togglePlanetBox);
 
@@ -16,6 +18,16 @@ function togglePlanetBox() {
             element.style.visibility = 'hidden';
         }
         boxTrigger = false;
+    }
+}
+
+export function setBoxVisibility(planetID) {
+    const Box = [
+        'Sun', 'Mercury', 'Venus', 'Earth', 'Moon', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune'
+    ].map(id => document.getElementById(id));
+    if (boxTrigger === true) {
+        Box.forEach(planet => planet.style.visibility = 'hidden');
+        Box[planetID].style.visibility = 'visible';
     }
 }
 
@@ -112,3 +124,7 @@ export function getCurrentTimeIncrement() {
     return timeIncrements[parseInt(TimeSlider.value, 10)].value
 }
 
+const AxelCheckBox = document.getElementById('toggle-rotation-axel');
+AxelCheckBox.addEventListener('change', () => {
+    ph.planets.forEach(p=>p.rotationAxel.visible= AxelCheckBox.checked)
+});

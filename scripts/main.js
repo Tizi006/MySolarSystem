@@ -4,7 +4,7 @@ import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
 import * as ph from './planethelper.js'
 //initialize images
 import backgroundUrl from '../images/textures/2kCompressed/2k_stars_milky_way.webp'
-import {boxTrigger, getCurrentTimeIncrement} from "./user-events.js";
+import {setBoxVisibility, getCurrentTimeIncrement} from "./user-events.js";
 
 /*Initialize scene*/
 const scene = new Three.Scene();
@@ -36,29 +36,21 @@ scene.background = backgroundTexture;
 scene.add(light);
 scene.add(lightUniversal);
 scene.add(lightUniversal.target)
-scene.add(ph.sun.mesh);
-scene.add(ph.mercury.mesh);
-scene.add(ph.venus.mesh);
-scene.add(ph.earth.mesh);
-scene.add(ph.moon.mesh);
-scene.add(ph.mars.mesh);
-scene.add(ph.jupiter.mesh);
-scene.add(ph.saturn.mesh);
+ph.sun.addToScene(scene)
+ph.mercury.addToScene(scene)
+ph.venus.addToScene(scene)
+ph.earth.addToScene(scene)
+ph.moon.addToScene(scene)
+ph.mars.addToScene(scene)
+ph.jupiter.addToScene(scene)
+ph.saturn.addToScene(scene)
 scene.add(ph.saturnRing.mesh);
-scene.add(ph.uranus.mesh);
-scene.add(ph.neptune.mesh);
+ph.uranus.addToScene(scene)
+ph.neptune.addToScene(scene)
 renderer.render(scene, camera);
 
 
-function setBoxVisibility(planetID) {
-    const Box = [
-        'Sun', 'Mercury', 'Venus', 'Earth', 'Moon', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune'
-    ].map(id => document.getElementById(id));
-    if (boxTrigger === true) {
-        Box.forEach(planet => planet.style.visibility = 'hidden');
-        Box[planetID].style.visibility = 'visible';
-    }
-}
+
 
 function incrementValue(value, target) {
     let step = 1.5;

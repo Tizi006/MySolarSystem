@@ -95,6 +95,10 @@ svg {
     opacity: 0;
     transition: opacity 1s, visibility 1s;
 }
+#settings-display{
+    display: flex;
+    flex-direction: column;
+}
 
 /*IDs*/
 #Sun, #Mercury, #Venus, #Earth, #Moon, #Mars, #Jupiter, #Saturn, #Neptune, #Uranus {

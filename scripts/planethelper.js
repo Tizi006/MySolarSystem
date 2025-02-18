@@ -11,6 +11,7 @@ import saturnTextureUrl from '../images/textures/2kCompressed/2k_saturn.webp';
 import saturnRingsTextureUrl from '../images/textures/2kCompressed/SaturnRings.webp';
 import uranusTextureUrl from '../images/textures/2kCompressed/2k_uranus.webp';
 import neptuneTextureUrl from '../images/textures/2kCompressed/2k_neptune.webp';
+import {CylinderGeometry} from "three";
 
 
 const planetPosition = [0, 57.9, 108.2, 149.6, 160, 227.6, 778.6, 1433.5, 2872.5, 4495.1];
@@ -26,31 +27,44 @@ class Planet {
             }));
         this.mesh.position.set(position.x, position.y, position.z)
         this.accumulatedAngle = 0;
+        const axelWidth =sphereGeometry.parameters.radius *0.02
+        this.rotationAxel = new Three.Mesh(
+            new Three.CylinderGeometry(axelWidth, axelWidth, sphereGeometry.parameters.radius * 4, 5),
+            new Three.MeshBasicMaterial({color: 0x00ff44})
+        )
+        this.rotationAxel.position.set(position.x, position.y, position.z)
+        this.rotationAxel.visible =false;
     }
 
+    addToScene(scene){
+        scene.add(this.mesh);
+        scene.add(this.rotationAxel);
+    }
     rotate(rotationPeriod, minuteTimeStep) {
         //euler angle in degrees: 360/minutes
-        const degreesPerMinute = 360/rotationPeriod
-        const radiansPerStep = (degreesPerMinute) * (Math.PI / 180)*minuteTimeStep;
+        const degreesPerMinute = 360 / rotationPeriod
+        const radiansPerStep = (degreesPerMinute) * (Math.PI / 180) * minuteTimeStep;
         this.mesh.rotation.y += radiansPerStep
-        this.mesh.rotation.y = this.mesh.rotation.y%(2 * Math.PI)
+        this.mesh.rotation.y = this.mesh.rotation.y % (2 * Math.PI)
     }
 
 
     //simplified round orbit with 0 y
     orbitObject({mesh: {position: centerPosition}}, distance, rotationPeriod, minuteTimeStep) {
-        const degreesPerMinute = 360/rotationPeriod
-        const radiansPerStep = (degreesPerMinute) * (Math.PI / 180)*minuteTimeStep;
-        this.accumulatedAngle +=radiansPerStep
-        this.accumulatedAngle =this.accumulatedAngle%(2 * Math.PI)
+        const degreesPerMinute = 360 / rotationPeriod
+        const radiansPerStep = (degreesPerMinute) * (Math.PI / 180) * minuteTimeStep;
+        this.accumulatedAngle += radiansPerStep
+        this.accumulatedAngle = this.accumulatedAngle % (2 * Math.PI)
 
         const x = centerPosition.x + distance * Math.cos(this.accumulatedAngle);
         const z = centerPosition.z + distance * Math.sin(this.accumulatedAngle);
         const newPos = new Three.Vector3(x, this.mesh.position.y, z)
-        this.mesh.position.lerp(newPos,0.5); // set the new position of the orbiting object
+        this.mesh.position.lerp(newPos, 0.5); // set the new position of the orbiting object
+        this.rotationAxel.position.lerp(newPos, 0.5)
     }
 }
-class Donut{
+
+class Donut {
     constructor(ringGeometry, textureUrl, centerPosition) {
         const texture = new Three.TextureLoader().load(textureUrl);
         this.mesh = new Three.Mesh(
@@ -61,12 +75,13 @@ class Donut{
             }));
         this.mesh.position.set(centerPosition.x, centerPosition.y, centerPosition.z)
     }
+
     rotate(rotationPeriod, minuteTimeStep) {
         //euler angle in degrees: 360/minutes
-        const degreesPerMinute = 360/rotationPeriod
-        const radiansPerStep = (degreesPerMinute) * (Math.PI / 180)*minuteTimeStep;
+        const degreesPerMinute = 360 / rotationPeriod
+        const radiansPerStep = (degreesPerMinute) * (Math.PI / 180) * minuteTimeStep;
         this.mesh.rotation.z += radiansPerStep
-        this.mesh.rotation.z = this.mesh.rotation.z%(2 * Math.PI)
+        this.mesh.rotation.z = this.mesh.rotation.z % (2 * Math.PI)
     }
 }
 
@@ -177,19 +192,19 @@ export function stepRotation(minuteTimeStep) {
     Neptune: 16h
     Calculated value in minutes:
     */
-    sun.rotate(36567,minuteTimeStep)
-    mercury.rotate(84960,minuteTimeStep)
-    venus.rotate(350906,minuteTimeStep)
-    earth.rotate(1436,minuteTimeStep)
-    mars.rotate(1476,minuteTimeStep)
-    jupiter.rotate(595,minuteTimeStep)
-    saturn.rotate(633,minuteTimeStep)
-    saturnRing.rotate(720,minuteTimeStep)
-    uranus.rotate(-1034,minuteTimeStep)
-    neptune.rotate(960,minuteTimeStep)
+    sun.rotate(36567, minuteTimeStep)
+    mercury.rotate(84960, minuteTimeStep)
+    venus.rotate(350906, minuteTimeStep)
+    earth.rotate(1436, minuteTimeStep)
+    mars.rotate(1476, minuteTimeStep)
+    jupiter.rotate(595, minuteTimeStep)
+    saturn.rotate(633, minuteTimeStep)
+    saturnRing.rotate(720, minuteTimeStep)
+    uranus.rotate(-1034, minuteTimeStep)
+    neptune.rotate(960, minuteTimeStep)
 
     moon.orbitObject(earth, 3.5, 39341, minuteTimeStep);
-    moon.rotate(-39341,minuteTimeStep)
+    moon.rotate(-39341, minuteTimeStep)
 }
 
 export function getFocusedPlanetID(camera, controls) {
