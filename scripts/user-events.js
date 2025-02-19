@@ -1,4 +1,6 @@
-export let boxTrigger = true;
+import * as ph from './planethelper.js'
+
+let boxTrigger = true;
 const ToggleBoxButton = document.querySelector('#Toggle-Box-Button')
 ToggleBoxButton.addEventListener('click', togglePlanetBox);
 
@@ -16,6 +18,16 @@ function togglePlanetBox() {
             element.style.visibility = 'hidden';
         }
         boxTrigger = false;
+    }
+}
+
+export function setBoxVisibility(planetID) {
+    const Box = [
+        'Sun', 'Mercury', 'Venus', 'Earth', 'Moon', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune'
+    ].map(id => document.getElementById(id));
+    if (boxTrigger === true) {
+        Box.forEach(planet => planet.style.visibility = 'hidden');
+        Box[planetID].style.visibility = 'visible';
     }
 }
 
@@ -47,9 +59,11 @@ function updatePopInVisibility() {
     const display = document.getElementById('pop-in');
     const info = document.getElementById('info-display');
     const settings = document.getElementById('settings-display');
+    const contentBoxes = document.querySelectorAll('.contentBox-right,.contentBox-left');
     if (infoTrigger || settingsTrigger) {
         display.style.visibility = 'visible';
         display.style.opacity = '100';
+        contentBoxes.forEach((box) =>{box.classList.add('shift-left')})
         if (infoTrigger) {
             info.style.visibility = 'visible';
             info.style.opacity = '100';
@@ -60,7 +74,7 @@ function updatePopInVisibility() {
         } else {
             settings.style.visibility = 'visible';
             settings.style.opacity = '100';
-            settings.style.display = 'block';
+            settings.style.display = 'flex';
             info.style.opacity = '0';
             info.style.visibility = 'hidden';
             info.style.display = 'none';
@@ -68,6 +82,7 @@ function updatePopInVisibility() {
     } else {
         display.style.opacity = '0';
         display.style.visibility = 'hidden';
+        contentBoxes.forEach((box) =>{box.classList.remove('shift-left')})
     }
 
 
@@ -112,3 +127,8 @@ export function getCurrentTimeIncrement() {
     return timeIncrements[parseInt(TimeSlider.value, 10)].value
 }
 
+const AxelCheckBox = document.getElementById('toggle-rotation-axel');
+ph.planets.forEach(p=>p.rotationAxel.visible= AxelCheckBox.checked)
+AxelCheckBox.addEventListener('change', () => {
+    ph.planets.forEach(p=>p.rotationAxel.visible= AxelCheckBox.checked)
+});

@@ -3,8 +3,8 @@ import * as Three from 'three';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
 import * as ph from './planethelper.js'
 //initialize images
-import backgroundUrl from '../images/textures/2kCompressed/2k_stars_milky_way.webp'
-import {boxTrigger, getCurrentTimeIncrement} from "./user-events.js";
+import backgroundUrl from '../images/textures/2kCompressed/8k_stars_milky_way.webp'
+import {setBoxVisibility, getCurrentTimeIncrement} from "./user-events.js";
 
 /*Initialize scene*/
 const scene = new Three.Scene();
@@ -21,6 +21,7 @@ camera.position.set(40, 0, -100)
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableZoom = false;
 controls.enableRotate = false;
+controls.enablePan = false;
 controls.target.set(0, 0, 0);
 
 //light
@@ -29,36 +30,29 @@ const lightUniversal = new Three.DirectionalLight(0xffffff, 0.1);
 lightUniversal.target.position.set(-5, 0, 0);
 
 //background
+//incorrect rotation fo the milky way plane (need 60°) but rotation not directly supported
 const backgroundTexture = new Three.TextureLoader().load(backgroundUrl);
+backgroundTexture.mapping = Three.EquirectangularRefractionMapping;
 scene.background = backgroundTexture;
-
 
 scene.add(light);
 scene.add(lightUniversal);
 scene.add(lightUniversal.target)
-scene.add(ph.sun.mesh);
-scene.add(ph.mercury.mesh);
-scene.add(ph.venus.mesh);
-scene.add(ph.earth.mesh);
-scene.add(ph.moon.mesh);
-scene.add(ph.mars.mesh);
-scene.add(ph.jupiter.mesh);
-scene.add(ph.saturn.mesh);
-scene.add(ph.saturnRing);
-scene.add(ph.uranus.mesh);
-scene.add(ph.neptune.mesh);
+ph.sun.addToScene(scene)
+ph.mercury.addToScene(scene)
+ph.venus.addToScene(scene)
+ph.addVenusAtmosphere(scene)
+ph.earth.addToScene(scene)
+ph.addEarthAtmosphere(scene)
+ph.moon.addToScene(scene)
+ph.mars.addToScene(scene)
+ph.jupiter.addToScene(scene)
+ph.saturn.addToScene(scene)
+scene.add(ph.saturnRing.mesh);
+ph.uranus.addToScene(scene)
+ph.neptune.addToScene(scene)
 renderer.render(scene, camera);
 
-
-function setBoxVisibility(planetID) {
-    const Box = [
-        'Sun', 'Mercury', 'Venus', 'Earth', 'Moon', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune'
-    ].map(id => document.getElementById(id));
-    if (boxTrigger === true) {
-        Box.forEach(planet => planet.style.visibility = 'hidden');
-        Box[planetID].style.visibility = 'visible';
-    }
-}
 
 function incrementValue(value, target) {
     let step = 1.5;
@@ -96,16 +90,17 @@ function animate() {
 }
 
 setInterval(() => {
-    ph.stepRotation(getCurrentTimeIncrement()/100);
-},1000/100);
+    ph.stepRotation(getCurrentTimeIncrement() / 100);
+}, 1000 / 100);
 
 function moveCamera() {
+    const scrollY = window.scrollY;
+    const scrollProgress = scrollY / 10;
     //set camera position
-    const t = ((document.body.getBoundingClientRect().top) / 10 * -1);
-    if (camera.position.z < 240) {
-        camera.position.z = t;
+    if (scrollProgress < 240) {
+        camera.position.z = scrollProgress;
     } else {
-        camera.position.z = (((t - 240) * 5) + 240)
+        camera.position.z = ((scrollProgress - 240) * 5) + 240;
     }
     //position of the camera left/right of a planet
     const targetPositions = [
@@ -136,5 +131,14 @@ function moveCamera() {
     }
 }
 
-document.body.onscroll = moveCamera;
+window.addEventListener('resize', () => {
+    // Update camera
+    camera.aspect = window.innerWidth/window.innerHeight
+    camera.updateProjectionMatrix()
+    //update renderer
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+})
+
+window.addEventListener('scroll', () => {moveCamera()});
 animate();
