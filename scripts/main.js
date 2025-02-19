@@ -3,7 +3,7 @@ import * as Three from 'three';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
 import * as ph from './planethelper.js'
 //initialize images
-import backgroundUrl from '../images/textures/2kCompressed/2k_stars_milky_way.webp'
+import backgroundUrl from '../images/textures/2kCompressed/8k_stars_milky_way.webp'
 import {setBoxVisibility, getCurrentTimeIncrement} from "./user-events.js";
 
 /*Initialize scene*/
@@ -30,9 +30,10 @@ const lightUniversal = new Three.DirectionalLight(0xffffff, 0.1);
 lightUniversal.target.position.set(-5, 0, 0);
 
 //background
+//incorrect rotation fo the milky way plane (need 60°) but rotation not directly supported
 const backgroundTexture = new Three.TextureLoader().load(backgroundUrl);
+backgroundTexture.mapping = Three.EquirectangularRefractionMapping;
 scene.background = backgroundTexture;
-
 
 scene.add(light);
 scene.add(lightUniversal);
@@ -129,6 +130,15 @@ function moveCamera() {
         }
     }
 }
+
+window.addEventListener('resize', () => {
+    // Update camera
+    camera.aspect = window.innerWidth/window.innerHeight
+    camera.updateProjectionMatrix()
+    //update renderer
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+})
 
 window.addEventListener('scroll', () => {moveCamera()});
 animate();
