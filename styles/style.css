@@ -122,6 +122,10 @@ svg {
 #placeholder-temp {
     height: 12000px;
 }
+#bg{
+    pointer-events: none;
+    z-index: -1;
+}
 
 /* small classes*/
 .flex-container-colum{

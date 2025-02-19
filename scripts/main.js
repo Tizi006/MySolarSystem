@@ -21,6 +21,7 @@ camera.position.set(40, 0, -100)
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableZoom = false;
 controls.enableRotate = false;
+controls.enablePan = false;
 controls.target.set(0, 0, 0);
 
 //light
@@ -50,8 +51,6 @@ scene.add(ph.saturnRing.mesh);
 ph.uranus.addToScene(scene)
 ph.neptune.addToScene(scene)
 renderer.render(scene, camera);
-
-
 
 
 function incrementValue(value, target) {
@@ -90,16 +89,17 @@ function animate() {
 }
 
 setInterval(() => {
-    ph.stepRotation(getCurrentTimeIncrement()/100);
-},1000/100);
+    ph.stepRotation(getCurrentTimeIncrement() / 100);
+}, 1000 / 100);
 
 function moveCamera() {
+    const scrollY = window.scrollY;
+    const scrollProgress = scrollY / 10;
     //set camera position
-    const t = ((document.body.getBoundingClientRect().top) / 10 * -1);
-    if (camera.position.z < 240) {
-        camera.position.z = t;
+    if (scrollProgress < 240) {
+        camera.position.z = scrollProgress;
     } else {
-        camera.position.z = (((t - 240) * 5) + 240)
+        camera.position.z = ((scrollProgress - 240) * 5) + 240;
     }
     //position of the camera left/right of a planet
     const targetPositions = [
@@ -130,5 +130,5 @@ function moveCamera() {
     }
 }
 
-document.body.onscroll = moveCamera;
+window.addEventListener('scroll', () => {moveCamera()});
 animate();
