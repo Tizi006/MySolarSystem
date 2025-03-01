@@ -86,6 +86,46 @@ class Planet {
     }
 }
 
+
+class Orbit{
+    constructor(centerObject, orbitingObject,aphelion,perihelion,rotationArgumentPerihelion,rotationLongitudeAscendingNode,inclination,eccentricity,perihelionTime,orbitalPeriod) {
+        const semi_major = (aphelion + perihelion) / 2;  // Semi-major axis
+        const semi_minor = semi_major * Math.sqrt(1 - eccentricity ** 2); // Semi-minor axis
+        const rotationRad = rotationArgumentPerihelion * (Math.PI / 180);
+        const inclinationRad = (inclination-90)* (Math.PI / 180); //to invariable plane
+        const ascendingNodeRad = rotationLongitudeAscendingNode * (Math.PI / 180); // Ω (Longitude of Ascending Node)
+
+        const focal_distance = semi_major * eccentricity; // Distance from center of the ellipse to the mass object
+        const massCenter = new Three.Vector3().copy(centerObject.mesh.position);
+        massCenter.x +=focal_distance
+        massCenter.applyAxisAngle(new Three.Vector3(0, 0, 1), rotationRad);
+
+        this.curve = new Three.EllipseCurve(
+            massCenter.x, massCenter.y,
+            semi_major, semi_minor,
+            0,  2 * Math.PI,  // aStartAngle, aEndAngle
+            false,            // aClockwise
+            rotationRad
+        );
+
+        const points = this.curve.getPoints( 100 );
+        const geometry = new Three.BufferGeometry().setFromPoints( points );
+        const material = new Three.LineBasicMaterial( { color: 0xff0000 } );
+        this.ellipse = new Three.Line( geometry, material );
+        this.ellipse.rotation.x = inclinationRad
+        //TODO: ascendingNodeRad
+
+        const perihelionPos= this.curve.getPointAt(0.5, new Three.Vector3()) // Perihelion is at t = 0
+        perihelionPos.applyAxisAngle(new Three.Vector3(1, 0, 0), inclinationRad); //rotate z-axes to respect inclination
+        orbitingObject.mesh.position.set(perihelionPos.x, perihelionPos.y, perihelionPos.z);
+    }
+    updateTimePosition(newTime){
+
+    }
+    addToScene(scene){
+        scene.add(this.ellipse)
+    }
+}
 class Donut {
     constructor(ringGeometry, textureUrl, centerPosition,axialTiltDegrees=0) {
         const texture = new Three.TextureLoader().load(textureUrl);
@@ -142,6 +182,7 @@ export const earth = new Planet(
     new Three.Vector3(0, 0, planetPosition[3]),
     23.44
 );
+export const test = new Orbit(sun, earth,152,147,114.20783,-11.26064,1.57869,0.0167086)
 export function addEarthAtmosphere(scene){earth.addAtmosphere(0.005,earthCloudsTextureUrl,25,scene)}
 
 // Moon

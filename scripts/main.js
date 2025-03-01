@@ -19,9 +19,9 @@ camera.position.set(40, 0, -100)
 
 //orbit control
 const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableZoom = false;
-controls.enableRotate = false;
-controls.enablePan = false;
+controls.enableZoom = true;
+controls.enableRotate = true;
+controls.enablePan = true;
 controls.target.set(0, 0, 0);
 
 //light
@@ -52,6 +52,7 @@ scene.add(ph.saturnRing.mesh);
 ph.uranus.addToScene(scene)
 ph.neptune.addToScene(scene)
 renderer.render(scene, camera);
+ph.test.addToScene(scene)
 
 
 function incrementValue(value, target) {
@@ -74,7 +75,7 @@ function animate() {
     setBoxVisibility(currentPlanetID);
 
     if (!((currentPlanetPosition - controls.target) > 0.1)) {
-        controls.target.lerp(currentPlanetPosition, 0.05);
+        //controls.target.lerp(currentPlanetPosition, 0.05);
     }
     /*set camera fov*/
     if (camera.position.z < ph.triggerPoints[4] && camera.position.z > ph.triggerPoints[3]) {
@@ -140,5 +141,5 @@ window.addEventListener('resize', () => {
     renderer.setSize(window.innerWidth, window.innerHeight);
 })
 
-window.addEventListener('scroll', () => {moveCamera()});
+//window.addEventListener('scroll', () => {moveCamera()});
 animate();
