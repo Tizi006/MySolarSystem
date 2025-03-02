@@ -7,9 +7,5 @@ COPY . .
 RUN npm run build
 
 # Serve Stage
-FROM node:23-alpine
-WORKDIR /app
-RUN npm i -g serve
-COPY --from=builder /app/dist /app/dist
-EXPOSE 80
-CMD [ "serve", "-s", "dist", "-p", "80" ]
+FROM httpd:2.4-alpine
+COPY --from=builder /app/dist /usr/local/apache2/htdocs/
