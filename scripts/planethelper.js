@@ -14,13 +14,28 @@ import saturnRingsTextureUrl from '../images/textures/2kCompressed/SaturnRings.w
 import uranusTextureUrl from '../images/textures/2kCompressed/2k_uranus.webp';
 import neptuneTextureUrl from '../images/textures/2kCompressed/2k_neptune.webp';
 
-
-const planetPosition = [0, 57.9, 108.2, 149.6, 160, 227.6, 778.6, 1433.5, 2872.5, 4495.1];
-export const triggerPoints = [planetPosition[1] - 15, planetPosition[2] - 15, planetPosition[3] - 15, planetPosition[4] - 2, planetPosition[5] - 20, planetPosition[6] - 300, planetPosition[7] - 300, planetPosition[8] - 700, planetPosition[9] - 1000];
+const scalePlanet = 1 / 5000
+const scaleDistance = 1 / 1000000
+const AU = 149597870.700
+const planetPosition = [0, 0.466697, 0.728213, 1, 1.3, 1.666206, 5.4570, 10.1238, 20.0965, 30.33];
+export const triggerPoints = [
+    planetPosition[1] - 0.1,
+    planetPosition[2] - 0.1,
+    planetPosition[3] - 0.1,
+    planetPosition[4] - 0.01,
+    planetPosition[5] - 0.13,
+    planetPosition[6] - 2,
+    planetPosition[7] - 2,
+    planetPosition[8] - 2.5,
+    planetPosition[9] - 6.6].map(value => value * scaleDistance * AU);
 
 class Planet {
-    constructor(sphereGeometry, textureUrl, position, axialTiltDegrees=0) {
+    constructor(radius, textureUrl, position, axialTiltDegrees = 0) {
         //planet
+        radius *= scalePlanet;
+        const segments = Math.max(32, radius * 3)
+        const sphereGeometry = new Three.SphereGeometry(radius, segments, segments);
+        position.multiplyScalar(scaleDistance * AU)
         const texture = new Three.TextureLoader().load(textureUrl);
         this.mesh = new Three.Mesh(
             sphereGeometry,
@@ -28,44 +43,47 @@ class Planet {
                 map: texture,
             }));
         this.mesh.position.set(position.x, position.y, position.z)
-        this.mesh.rotation.x = axialTiltDegrees* (Math.PI / 180)
+        this.mesh.rotation.x = axialTiltDegrees * (Math.PI / 180)
         this.accumulatedAngle = 0;
         //axel
-        const axelWidth =sphereGeometry.parameters.radius *0.02
+        const axelWidth = sphereGeometry.parameters.radius * 0.02
         this.rotationAxel = new Three.Mesh(
             new Three.CylinderGeometry(axelWidth, axelWidth, sphereGeometry.parameters.radius * 4, 5),
             new Three.MeshBasicMaterial({color: 0x00ff44})
         )
         this.rotationAxel.position.set(position.x, position.y, position.z)
-        this.rotationAxel.rotation.x = axialTiltDegrees* (Math.PI / 180)
-        this.rotationAxel.visible =false;
+        this.rotationAxel.rotation.x = axialTiltDegrees * (Math.PI / 180)
+        this.rotationAxel.visible = false;
     }
 
-    addToScene(scene){
+    addToScene(scene) {
         scene.add(this.mesh);
         scene.add(this.rotationAxel);
     }
-    addAtmosphere(distance,textureUrl,speedPercent,scene){
-        this.atmosphereSpeedPercent =speedPercent
+
+    addAtmosphere(distance, textureUrl, speedPercent, scene) {
+        distance *= scalePlanet
+        this.atmosphereSpeedPercent = speedPercent
         const texture = new Three.TextureLoader().load(textureUrl);
         this.atmosphere = new Three.Mesh(
-            new Three.SphereGeometry(this.mesh.geometry.parameters.radius+distance, this.mesh.geometry.parameters.widthSegments, this.mesh.geometry.parameters.heightSegments),
+            new Three.SphereGeometry(this.mesh.geometry.parameters.radius + distance, this.mesh.geometry.parameters.widthSegments, this.mesh.geometry.parameters.heightSegments),
             new Three.MeshBasicMaterial({
                 map: texture,
                 transparent: true
             }));
-        this.atmosphere.position.set(this.mesh.position.x,this.mesh.position.y,this.mesh.position.z)
+        this.atmosphere.position.set(this.mesh.position.x, this.mesh.position.y, this.mesh.position.z)
         this.atmosphere.rotation.x = this.mesh.rotation.x
         scene.add(this.atmosphere)
     }
+
     rotate(rotationPeriod, minuteTimeStep) {
         //euler angle in degrees: 360/minutes
         const degreesPerMinute = 360 / rotationPeriod
         const radiansPerStep = (degreesPerMinute) * (Math.PI / 180) * minuteTimeStep;
         this.mesh.rotation.y += radiansPerStep
         this.mesh.rotation.y = this.mesh.rotation.y % (2 * Math.PI)
-        if(this.atmosphere){
-            this.atmosphere.rotation.y += radiansPerStep+radiansPerStep*(this.atmosphereSpeedPercent/100)
+        if (this.atmosphere) {
+            this.atmosphere.rotation.y += radiansPerStep + radiansPerStep * (this.atmosphereSpeedPercent / 100)
             this.atmosphere.rotation.y = this.atmosphere.rotation.y % (2 * Math.PI)
         }
     }
@@ -82,52 +100,64 @@ class Planet {
         const newPos = new Three.Vector3(x, this.mesh.position.y, z)
         this.mesh.position.lerp(newPos, 0.5); // set the new position of the orbiting object
         this.rotationAxel.position.lerp(newPos, 0.5)
-        if(this.atmosphere){this.atmosphere.position.lerp(newPos, 0.5)}
+        if (this.atmosphere) {
+            this.atmosphere.position.lerp(newPos, 0.5)
+        }
     }
 }
 
 
-class Orbit{
-    constructor(centerObject, orbitingObject,aphelion,perihelion,rotationArgumentPerihelion,rotationLongitudeAscendingNode,inclination,eccentricity,perihelionTime,orbitalPeriod) {
+class Orbit {
+    constructor(centerObject, orbitingObject, aphelion, perihelion, rotationArgumentPerihelion, rotationLongitudeAscendingNode, inclination, eccentricity, perihelionTime, orbitalPeriod) {
+        aphelion *= scaleDistance * AU
+        perihelion *= scaleDistance * AU
         const semi_major = (aphelion + perihelion) / 2;  // Semi-major axis
         const semi_minor = semi_major * Math.sqrt(1 - eccentricity ** 2); // Semi-minor axis
         const rotationRad = rotationArgumentPerihelion * (Math.PI / 180);
-        const inclinationRad = (inclination-90)* (Math.PI / 180); //to invariable plane
+        const inclinationRad = (inclination - 90) * (Math.PI / 180); //to invariable plane
         const ascendingNodeRad = rotationLongitudeAscendingNode * (Math.PI / 180); // Ω (Longitude of Ascending Node)
 
         const focal_distance = semi_major * eccentricity; // Distance from center of the ellipse to the mass object
         const massCenter = new Three.Vector3().copy(centerObject.mesh.position);
-        massCenter.x +=focal_distance
+        massCenter.x += focal_distance
         massCenter.applyAxisAngle(new Three.Vector3(0, 0, 1), rotationRad);
 
         this.curve = new Three.EllipseCurve(
             massCenter.x, massCenter.y,
             semi_major, semi_minor,
-            0,  2 * Math.PI,  // aStartAngle, aEndAngle
+            0, 2 * Math.PI,  // aStartAngle, aEndAngle
             false,            // aClockwise
             rotationRad
         );
 
-        const points = this.curve.getPoints( 100 );
-        const geometry = new Three.BufferGeometry().setFromPoints( points );
-        const material = new Three.LineBasicMaterial( { color: 0xff0000 } );
-        this.ellipse = new Three.Line( geometry, material );
+        const points = this.curve.getPoints(100);
+        const geometry = new Three.BufferGeometry().setFromPoints(points);
+        const material = new Three.LineBasicMaterial({color: 0xff0000});
+        this.ellipse = new Three.Line(geometry, material);
         this.ellipse.rotation.x = inclinationRad
         //TODO: ascendingNodeRad
 
-        const perihelionPos= this.curve.getPointAt(0.5, new Three.Vector3()) // Perihelion is at t = 0
+        const perihelionPos = this.curve.getPointAt(0.5, new Three.Vector3()) // Perihelion is at t = 0
         perihelionPos.applyAxisAngle(new Three.Vector3(1, 0, 0), inclinationRad); //rotate z-axes to respect inclination
         orbitingObject.mesh.position.set(perihelionPos.x, perihelionPos.y, perihelionPos.z);
     }
-    updateTimePosition(newTime){
+
+    updateTimePosition(newTime) {
 
     }
-    addToScene(scene){
+
+    addToScene(scene) {
         scene.add(this.ellipse)
     }
 }
+
 class Donut {
-    constructor(ringGeometry, textureUrl, centerPosition,axialTiltDegrees=0) {
+    constructor(innerRadius, outerRadius, textureUrl, centerPosition, axialTiltDegrees = 0) {
+        centerPosition.multiplyScalar(scaleDistance * AU)
+        innerRadius *= scalePlanet;
+        outerRadius *= scalePlanet;
+        const segments = Math.max(100, outerRadius * 3)
+        const ringGeometry = new Three.RingGeometry(innerRadius, outerRadius, segments);
         const texture = new Three.TextureLoader().load(textureUrl);
         this.mesh = new Three.Mesh(
             ringGeometry,
@@ -137,7 +167,7 @@ class Donut {
                 transparent: true
             }));
         this.mesh.position.set(centerPosition.x, centerPosition.y, centerPosition.z)
-        this.mesh.rotation.x =(axialTiltDegrees-90)* (Math.PI / 180)
+        this.mesh.rotation.x = (axialTiltDegrees - 90) * (Math.PI / 180)
     }
 
     rotate(rotationPeriod, minuteTimeStep) {
@@ -152,7 +182,7 @@ class Donut {
 
 //sun
 export const sun = new Planet(
-    new Three.SphereGeometry(27.8, 100, 100),
+    69570,
     sunTextureUrl,
     new Three.Vector3(0, 0, planetPosition[0]),
     7.25
@@ -160,7 +190,7 @@ export const sun = new Planet(
 
 // Mercury
 export const mercury = new Planet(
-    new Three.SphereGeometry(0.4879, 32, 32),
+    2439.7,
     mercuryTextureUrl,
     new Three.Vector3(0, 0, planetPosition[1]),
     0.03
@@ -168,35 +198,41 @@ export const mercury = new Planet(
 
 // Venus
 export const venus = new Planet(
-    new Three.SphereGeometry(1.2104, 50, 50),
+    6051.8,
     venusTextureUrl,
     new Three.Vector3(0, 0, planetPosition[2]),
     -2.64
 );
-export function addVenusAtmosphere(scene){venus.addAtmosphere(0.005,venusAtmosphereTextureUrl,25,scene)}
+
+export function addVenusAtmosphere(scene) {
+    venus.addAtmosphere(70, venusAtmosphereTextureUrl, 25, scene)
+}
 
 // Earth
 export const earth = new Planet(
-    new Three.SphereGeometry(1.2756, 100, 100),
+    6371.0,
     earthTextureUrl,
     new Three.Vector3(0, 0, planetPosition[3]),
     23.44
 );
-export const test = new Orbit(sun, earth,152,147,114.20783,-11.26064,1.57869,0.0167086)
-export function addEarthAtmosphere(scene){earth.addAtmosphere(0.005,earthCloudsTextureUrl,25,scene)}
+export const test = new Orbit(sun, earth, 1.01670963823, 0.983292404576, 114.20783, -11.26064, 1.57869, 0.0167086)
+
+export function addEarthAtmosphere(scene) {
+    earth.addAtmosphere(25, earthCloudsTextureUrl, 25, scene)
+}
 
 // Moon
 export const moon = new Planet(
-    new Three.SphereGeometry(0.1737, 32, 32),
+    1737.4,
     moonTextureUrl,
     new Three.Vector3(0, 0, planetPosition[4]),
     6.68
 );
 //initially rotate moon to approximately face the correct side to the earth
-moon.mesh.rotation.y =Math.PI
+moon.mesh.rotation.y = Math.PI
 // Mars
 export const mars = new Planet(
-    new Three.SphereGeometry(0.6792, 50, 50),
+    3389.5,
     marsTextureUrl,
     new Three.Vector3(0, 0, planetPosition[5]),
     25.19
@@ -204,7 +240,7 @@ export const mars = new Planet(
 
 // Jupiter
 export const jupiter = new Planet(
-    new Three.SphereGeometry(14.2984, 50, 50),
+    69911,
     jupiterTextureUrl,
     new Three.Vector3(0, 0, planetPosition[6]),
     3.13
@@ -212,7 +248,7 @@ export const jupiter = new Planet(
 
 // Saturn
 export const saturn = new Planet(
-    new Three.SphereGeometry(12.0536, 50, 50),
+    58232,
     saturnTextureUrl,
     new Three.Vector3(0, 0, planetPosition[7]),
     26.73
@@ -220,7 +256,7 @@ export const saturn = new Planet(
 
 //saturnRing
 export const saturnRing = new Donut(
-    new Three.RingGeometry(17, 28, 2000),
+    70000, 140180,
     saturnRingsTextureUrl,
     new Three.Vector3(0, 0, planetPosition[7]),
     26.73
@@ -228,7 +264,7 @@ export const saturnRing = new Donut(
 
 // Uranus
 export const uranus = new Planet(
-    new Three.SphereGeometry(5.1118, 50, 50),
+    25362,
     uranusTextureUrl,
     new Three.Vector3(0, 0, planetPosition[8]),
     -82.23
@@ -236,7 +272,7 @@ export const uranus = new Planet(
 
 // Neptune
 export const neptune = new Planet(
-    new Three.SphereGeometry(4.9528, 50, 50),
+    24622,
     neptuneTextureUrl,
     new Three.Vector3(0, 0, planetPosition[9]),
     28.32
