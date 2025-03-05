@@ -40,19 +40,23 @@ scene.add(lightUniversal);
 scene.add(lightUniversal.target)
 ph.sun.addToScene(scene)
 ph.mercury.addToScene(scene)
+ph.mercuryOrbit.addToScene(scene)
 ph.venus.addToScene(scene)
-ph.addVenusAtmosphere(scene)
+ph.venusOrbit.addToScene(scene)
 ph.earth.addToScene(scene)
-ph.addEarthAtmosphere(scene)
+ph.earthOrbit.addToScene(scene)
 ph.moon.addToScene(scene)
 ph.mars.addToScene(scene)
+ph.marsOrbit.addToScene(scene)
 ph.jupiter.addToScene(scene)
+ph.jupiterOrbit.addToScene(scene)
 ph.saturn.addToScene(scene)
-scene.add(ph.saturnRing.mesh);
+ph.saturnOrbit.addToScene(scene)
 ph.uranus.addToScene(scene)
+ph.uranusOrbit.addToScene(scene)
 ph.neptune.addToScene(scene)
+ph.neptuneOrbit.addToScene(scene)
 renderer.render(scene, camera);
-ph.test.addToScene(scene)
 
 
 function incrementValue(value, target) {

@@ -56,12 +56,7 @@ class Planet {
         this.rotationAxel.visible = false;
     }
 
-    addToScene(scene) {
-        scene.add(this.mesh);
-        scene.add(this.rotationAxel);
-    }
-
-    addAtmosphere(distance, textureUrl, speedPercent, scene) {
+    addAtmosphere(distance, textureUrl, speedPercent) {
         distance *= scalePlanet
         this.atmosphereSpeedPercent = speedPercent
         const texture = new Three.TextureLoader().load(textureUrl);
@@ -73,7 +68,21 @@ class Planet {
             }));
         this.atmosphere.position.set(this.mesh.position.x, this.mesh.position.y, this.mesh.position.z)
         this.atmosphere.rotation.x = this.mesh.rotation.x
-        scene.add(this.atmosphere)
+    }
+
+    addDonut(innerRadius, outerRadius, textureUrl, centerPosition, axialTiltDegrees = 0) {
+        this.donut = new Donut(innerRadius, outerRadius, textureUrl, centerPosition, axialTiltDegrees)
+    }
+
+    addToScene(scene) {
+        scene.add(this.mesh);
+        scene.add(this.rotationAxel);
+        if (this.atmosphere) {
+            scene.add(this.atmosphere);
+        }
+        if (this.donut) {
+            scene.add(this.donut.mesh);
+        }
     }
 
     rotate(rotationPeriod, minuteTimeStep) {
@@ -88,6 +97,28 @@ class Planet {
         }
     }
 
+    updatePositionInstant(newPos) {
+        this.mesh.position.set(newPos.x, newPos.y, newPos.z);
+        this.rotationAxel.position.set(newPos.x, newPos.y, newPos.z);
+        if (this.atmosphere) {
+            this.atmosphere.position.set(newPos.x, newPos.y, newPos.z);
+        }
+        if (this.donut) {
+            this.donut.mesh.position.set(newPos.x, newPos.y, newPos.z);
+        }
+    }
+
+    updatePositionGradual(newPos) {
+        this.mesh.position.lerp(newPos, 0.5);
+        this.rotationAxel.position.lerp(newPos, 0.5)
+        if (this.atmosphere) {
+            this.atmosphere.position.lerp(newPos, 0.5)
+        }
+        if (this.donut) {
+            this.donut.mesh.position.lerp(newPos, 0.5)
+        }
+    }
+
     //simplified round orbit with 0 y
     orbitObject({mesh: {position: centerPosition}}, distance, rotationPeriod, minuteTimeStep) {
         const degreesPerMinute = 360 / rotationPeriod
@@ -98,11 +129,7 @@ class Planet {
         const x = centerPosition.x + distance * Math.cos(this.accumulatedAngle);
         const z = centerPosition.z + distance * Math.sin(this.accumulatedAngle);
         const newPos = new Three.Vector3(x, this.mesh.position.y, z)
-        this.mesh.position.lerp(newPos, 0.5); // set the new position of the orbiting object
-        this.rotationAxel.position.lerp(newPos, 0.5)
-        if (this.atmosphere) {
-            this.atmosphere.position.lerp(newPos, 0.5)
-        }
+        this.updatePositionInstant(newPos) // set the new position of the orbiting object
     }
 }
 
@@ -136,10 +163,11 @@ class Orbit {
         this.ellipse = new Three.Line(geometry, material);
         this.ellipse.rotation.x = inclinationRad
         //TODO: ascendingNodeRad
+        //perihelionTime: Time in UT1, calculated from Orbital Elements:TP https://ssd.jpl.nasa.gov/horizons/app.html#/ Time in UT1
 
         const perihelionPos = this.curve.getPointAt(0.5, new Three.Vector3()) // Perihelion is at t = 0
         perihelionPos.applyAxisAngle(new Three.Vector3(1, 0, 0), inclinationRad); //rotate z-axes to respect inclination
-        orbitingObject.mesh.position.set(perihelionPos.x, perihelionPos.y, perihelionPos.z);
+        orbitingObject.updatePositionInstant(perihelionPos)
     }
 
     updateTimePosition(newTime) {
@@ -152,7 +180,7 @@ class Orbit {
 }
 
 class Donut {
-    constructor(innerRadius, outerRadius, textureUrl, centerPosition, axialTiltDegrees = 0) {
+    constructor(innerRadius, outerRadius, textureUrl, centerPosition, axialTiltDegrees) {
         centerPosition.multiplyScalar(scaleDistance * AU)
         innerRadius *= scalePlanet;
         outerRadius *= scalePlanet;
@@ -185,7 +213,7 @@ export const sun = new Planet(
     69570,
     sunTextureUrl,
     new Three.Vector3(0, 0, planetPosition[0]),
-    7.25
+    7.25 //(ecliptic), not plain :(
 )
 
 // Mercury
@@ -195,6 +223,16 @@ export const mercury = new Planet(
     new Three.Vector3(0, 0, planetPosition[1]),
     0.03
 );
+export const mercuryOrbit = new Orbit(sun, mercury,
+    0.466697,
+    0.307499,
+    29.124,
+    48.331,
+    6.35,
+    0.205630,
+    new Date(2025, 3, 4, 13, 40),
+    87.9691
+);
 
 // Venus
 export const venus = new Planet(
@@ -203,10 +241,18 @@ export const venus = new Planet(
     new Three.Vector3(0, 0, planetPosition[2]),
     -2.64
 );
+venus.addAtmosphere(70, venusAtmosphereTextureUrl, 25)
+export const venusOrbit = new Orbit(sun, venus,
+    0.728213,
+    0.718440,
+    54.884,
+    76.680,
+    2.15,
+    0.006772,
+    new Date(2025, 2, 19, 19, 44),
+    224.701
+);
 
-export function addVenusAtmosphere(scene) {
-    venus.addAtmosphere(70, venusAtmosphereTextureUrl, 25, scene)
-}
 
 // Earth
 export const earth = new Planet(
@@ -215,11 +261,18 @@ export const earth = new Planet(
     new Three.Vector3(0, 0, planetPosition[3]),
     23.44
 );
-export const test = new Orbit(sun, earth, 1.01670963823, 0.983292404576, 114.20783, -11.26064, 1.57869, 0.0167086)
+earth.addAtmosphere(25, earthCloudsTextureUrl, 25)
+export const earthOrbit = new Orbit(sun, earth,
+    1.01670963823,
+    0.983292404576,
+    114.20783,
+    -11.26064,
+    1.57869,
+    0.0167086,
+    new Date(2025, 1, 5, 1, 22),
+    365.256363004
+);
 
-export function addEarthAtmosphere(scene) {
-    earth.addAtmosphere(25, earthCloudsTextureUrl, 25, scene)
-}
 
 // Moon
 export const moon = new Planet(
@@ -237,6 +290,16 @@ export const mars = new Planet(
     new Three.Vector3(0, 0, planetPosition[5]),
     25.19
 );
+export const marsOrbit = new Orbit(sun, mars,
+    1.66621,
+    1.3814,
+    286.5,
+    49.578,
+    1.63,
+    0.0934,
+    new Date(2024, 5, 8, 11, 31),
+    686.980
+);
 
 // Jupiter
 export const jupiter = new Planet(
@@ -244,6 +307,16 @@ export const jupiter = new Planet(
     jupiterTextureUrl,
     new Three.Vector3(0, 0, planetPosition[6]),
     3.13
+);
+export const jupiterOrbit = new Orbit(sun, jupiter,
+    5.4570,
+    4.9506,
+    273.867,
+    100.464,
+    0.32,
+    0.0489,
+    new Date(2023, 1, 21),
+    4332.59
 );
 
 // Saturn
@@ -253,14 +326,23 @@ export const saturn = new Planet(
     new Three.Vector3(0, 0, planetPosition[7]),
     26.73
 );
-
 //saturnRing
-export const saturnRing = new Donut(
+saturn.addDonut(
     70000, 140180,
     saturnRingsTextureUrl,
     new Three.Vector3(0, 0, planetPosition[7]),
-    26.73
-)
+    26.73)
+export const saturnOrbit = new Orbit(sun, saturn,
+    10.1238,
+    9.0412,
+    339.392,
+    113.665,
+    0.93,
+    0.0565,
+    new Date(2032, 10, 25),
+    10755.70
+);
+
 
 // Uranus
 export const uranus = new Planet(
@@ -269,6 +351,16 @@ export const uranus = new Planet(
     new Three.Vector3(0, 0, planetPosition[8]),
     -82.23
 );
+export const uranusOrbit = new Orbit(sun, uranus,
+    20.0965,
+    18.2861,
+    96.998,
+    74.006,
+    0.99,
+    0.04717,
+    new Date(2049, 7, 22),
+    30688.5
+);
 
 // Neptune
 export const neptune = new Planet(
@@ -276,6 +368,16 @@ export const neptune = new Planet(
     neptuneTextureUrl,
     new Three.Vector3(0, 0, planetPosition[9]),
     28.32
+);
+export const neptuneOrbit = new Orbit(sun, neptune,
+    30.33,
+    29.81,
+    273.187,
+    131.783,
+    0.74,
+    0.008678,
+    new Date(2043, 8, 20),
+    60195
 );
 
 export const planets = [
@@ -314,7 +416,7 @@ export function stepRotation(minuteTimeStep) {
     mars.rotate(1476, minuteTimeStep)
     jupiter.rotate(595, minuteTimeStep)
     saturn.rotate(633, minuteTimeStep)
-    saturnRing.rotate(720, minuteTimeStep)
+    saturn.donut.rotate(720, minuteTimeStep)
     uranus.rotate(1034, minuteTimeStep)
     neptune.rotate(960, minuteTimeStep)
 
