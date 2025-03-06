@@ -38,24 +38,8 @@ scene.background = backgroundTexture;
 scene.add(light);
 scene.add(lightUniversal);
 scene.add(lightUniversal.target)
-ph.sun.addToScene(scene)
-ph.mercury.addToScene(scene)
-ph.mercuryOrbit.addToScene(scene)
-ph.venus.addToScene(scene)
-ph.venusOrbit.addToScene(scene)
-ph.earth.addToScene(scene)
-ph.earthOrbit.addToScene(scene)
-ph.moon.addToScene(scene)
-ph.mars.addToScene(scene)
-ph.marsOrbit.addToScene(scene)
-ph.jupiter.addToScene(scene)
-ph.jupiterOrbit.addToScene(scene)
-ph.saturn.addToScene(scene)
-ph.saturnOrbit.addToScene(scene)
-ph.uranus.addToScene(scene)
-ph.uranusOrbit.addToScene(scene)
-ph.neptune.addToScene(scene)
-ph.neptuneOrbit.addToScene(scene)
+ph.planets.forEach(p=>p.addToScene(scene))
+ph.orbits.forEach(o=>o.addToScene(scene))
 renderer.render(scene, camera);
 
 

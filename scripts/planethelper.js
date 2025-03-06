@@ -209,7 +209,7 @@ class Donut {
 
 
 //sun
-export const sun = new Planet(
+const sun = new Planet(
     69570,
     sunTextureUrl,
     new Three.Vector3(0, 0, planetPosition[0]),
@@ -217,13 +217,13 @@ export const sun = new Planet(
 )
 
 // Mercury
-export const mercury = new Planet(
+const mercury = new Planet(
     2439.7,
     mercuryTextureUrl,
     new Three.Vector3(0, 0, planetPosition[1]),
     0.03
 );
-export const mercuryOrbit = new Orbit(sun, mercury,
+const mercuryOrbit = new Orbit(sun, mercury,
     0.466697,
     0.307499,
     29.124,
@@ -235,14 +235,14 @@ export const mercuryOrbit = new Orbit(sun, mercury,
 );
 
 // Venus
-export const venus = new Planet(
+const venus = new Planet(
     6051.8,
     venusTextureUrl,
     new Three.Vector3(0, 0, planetPosition[2]),
     -2.64
 );
 venus.addAtmosphere(70, venusAtmosphereTextureUrl, 25)
-export const venusOrbit = new Orbit(sun, venus,
+const venusOrbit = new Orbit(sun, venus,
     0.728213,
     0.718440,
     54.884,
@@ -255,14 +255,14 @@ export const venusOrbit = new Orbit(sun, venus,
 
 
 // Earth
-export const earth = new Planet(
+const earth = new Planet(
     6371.0,
     earthTextureUrl,
     new Three.Vector3(0, 0, planetPosition[3]),
     23.44
 );
 earth.addAtmosphere(25, earthCloudsTextureUrl, 25)
-export const earthOrbit = new Orbit(sun, earth,
+const earthOrbit = new Orbit(sun, earth,
     1.01670963823,
     0.983292404576,
     114.20783,
@@ -275,7 +275,7 @@ export const earthOrbit = new Orbit(sun, earth,
 
 
 // Moon
-export const moon = new Planet(
+const moon = new Planet(
     1737.4,
     moonTextureUrl,
     new Three.Vector3(0, 0, planetPosition[4]),
@@ -284,13 +284,13 @@ export const moon = new Planet(
 //initially rotate moon to approximately face the correct side to the earth
 moon.mesh.rotation.y = Math.PI
 // Mars
-export const mars = new Planet(
+const mars = new Planet(
     3389.5,
     marsTextureUrl,
     new Three.Vector3(0, 0, planetPosition[5]),
     25.19
 );
-export const marsOrbit = new Orbit(sun, mars,
+const marsOrbit = new Orbit(sun, mars,
     1.66621,
     1.3814,
     286.5,
@@ -302,13 +302,13 @@ export const marsOrbit = new Orbit(sun, mars,
 );
 
 // Jupiter
-export const jupiter = new Planet(
+const jupiter = new Planet(
     69911,
     jupiterTextureUrl,
     new Three.Vector3(0, 0, planetPosition[6]),
     3.13
 );
-export const jupiterOrbit = new Orbit(sun, jupiter,
+const jupiterOrbit = new Orbit(sun, jupiter,
     5.4570,
     4.9506,
     273.867,
@@ -320,7 +320,7 @@ export const jupiterOrbit = new Orbit(sun, jupiter,
 );
 
 // Saturn
-export const saturn = new Planet(
+const saturn = new Planet(
     58232,
     saturnTextureUrl,
     new Three.Vector3(0, 0, planetPosition[7]),
@@ -332,7 +332,7 @@ saturn.addDonut(
     saturnRingsTextureUrl,
     new Three.Vector3(0, 0, planetPosition[7]),
     26.73)
-export const saturnOrbit = new Orbit(sun, saturn,
+const saturnOrbit = new Orbit(sun, saturn,
     10.1238,
     9.0412,
     339.392,
@@ -345,13 +345,13 @@ export const saturnOrbit = new Orbit(sun, saturn,
 
 
 // Uranus
-export const uranus = new Planet(
+const uranus = new Planet(
     25362,
     uranusTextureUrl,
     new Three.Vector3(0, 0, planetPosition[8]),
     -82.23
 );
-export const uranusOrbit = new Orbit(sun, uranus,
+const uranusOrbit = new Orbit(sun, uranus,
     20.0965,
     18.2861,
     96.998,
@@ -363,13 +363,13 @@ export const uranusOrbit = new Orbit(sun, uranus,
 );
 
 // Neptune
-export const neptune = new Planet(
+const neptune = new Planet(
     24622,
     neptuneTextureUrl,
     new Three.Vector3(0, 0, planetPosition[9]),
     28.32
 );
-export const neptuneOrbit = new Orbit(sun, neptune,
+const neptuneOrbit = new Orbit(sun, neptune,
     30.33,
     29.81,
     273.187,
@@ -391,6 +391,18 @@ export const planets = [
     saturn,
     uranus,
     neptune
+];
+
+export const orbits = [
+    mercuryOrbit,
+    venusOrbit,
+    earthOrbit,
+    //moonOrbit,
+    marsOrbit,
+    jupiterOrbit,
+    saturnOrbit,
+    uranusOrbit,
+    neptuneOrbit
 ];
 
 
