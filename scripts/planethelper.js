@@ -33,7 +33,7 @@ class Planet {
     constructor(radius, textureUrl, position, axialTiltDegrees = 0) {
         //planet
         radius *= scalePlanet;
-        const segments = Math.max(32, radius * 3)
+        const segments = Math.max(50, radius * 3)
         const sphereGeometry = new Three.SphereGeometry(radius, segments, segments);
         position.multiplyScalar(scaleDistance * AU)
         const texture = new Three.TextureLoader().load(textureUrl);
@@ -118,19 +118,6 @@ class Planet {
             this.donut.mesh.position.lerp(newPos, 0.5)
         }
     }
-
-    //simplified round orbit with 0 y
-    orbitObject({mesh: {position: centerPosition}}, distance, rotationPeriod, minuteTimeStep) {
-        const degreesPerMinute = 360 / rotationPeriod
-        const radiansPerStep = degreesPerMinute * (Math.PI / 180) * minuteTimeStep;
-        this.accumulatedAngle += radiansPerStep
-        this.accumulatedAngle = this.accumulatedAngle % (2 * Math.PI)
-
-        const x = centerPosition.x + distance * Math.cos(this.accumulatedAngle);
-        const z = centerPosition.z + distance * Math.sin(this.accumulatedAngle);
-        const newPos = new Three.Vector3(x, this.mesh.position.y, z)
-        this.updatePositionInstant(newPos) // set the new position of the orbiting object
-    }
 }
 
 
@@ -140,33 +127,44 @@ class Orbit {
         perihelion *= scaleDistance * AU
         const semi_major = (aphelion + perihelion) / 2;  // Semi-major axis
         const semi_minor = semi_major * Math.sqrt(1 - eccentricity ** 2); // Semi-minor axis
-        const rotationRad = rotationArgumentPerihelion * (Math.PI / 180);
-        const inclinationRad = (inclination - 90) * (Math.PI / 180); //to invariable plane
+        const rotationRad = rotationArgumentPerihelion * (Math.PI / 180); //rotation in its own plane
+        const inclinationRad = inclination * (Math.PI / 180); //to invariable plane
         const ascendingNodeRad = rotationLongitudeAscendingNode * (Math.PI / 180); // Ω (Longitude of Ascending Node)
 
         const focal_distance = semi_major * eccentricity; // Distance from center of the ellipse to the mass object
-        const massCenter = new Three.Vector3().copy(centerObject.mesh.position);
-        massCenter.x += focal_distance
-        massCenter.applyAxisAngle(new Three.Vector3(0, 0, 1), rotationRad);
+        let focalPoint = new Three.Vector3().copy(centerObject.mesh.position);
+        focalPoint.x += focal_distance
 
         this.curve = new Three.EllipseCurve(
-            massCenter.x, massCenter.y,
+            0, 0,
             semi_major, semi_minor,
             0, 2 * Math.PI,  // aStartAngle, aEndAngle
             false,            // aClockwise
-            rotationRad
+            0
         );
 
-        const points = this.curve.getPoints(100);
-        const geometry = new Three.BufferGeometry().setFromPoints(points);
+        const points2D = this.curve.getPoints(100);
+        const points3D = points2D.map(p => {
+            let pos = new Three.Vector3(p.x, p.y, p.z); // Ensure Z is initialized correctly
+            // Move to mass center
+            pos.add(focalPoint);
+            return pos;
+        });
+        const geometry = new Three.BufferGeometry().setFromPoints(points3D);
         const material = new Three.LineBasicMaterial({color: 0xff0000});
         this.ellipse = new Three.Line(geometry, material);
-        this.ellipse.rotation.x = inclinationRad
-        //TODO: ascendingNodeRad
-        //perihelionTime: Time in UT1, calculated from Orbital Elements:TP https://ssd.jpl.nasa.gov/horizons/app.html#/ Time in UT1
 
+        this.ellipse.rotateOnWorldAxis(new Three.Vector3(1, 0, 0), Math.PI / 2);  // Rotate from XY plane to XZ plane
+        this.ellipse.rotateOnWorldAxis(new Three.Vector3(0, 1, 0), rotationRad);  // Rotate by argument of perihelion
+        this.ellipse.rotateOnWorldAxis(new Three.Vector3(1, 0, 0), inclinationRad); // Rotate by inclination
+        this.ellipse.rotateOnWorldAxis(new Three.Vector3(0, 1, 0), ascendingNodeRad); // Rotate by longitude of ascending node
+
+        //perihelionTime: Time in UT1, calculated from Orbital Elements:TP https://ssd.jpl.nasa.gov/horizons/app.html#/
         const perihelionPos = this.curve.getPointAt(0.5, new Three.Vector3()) // Perihelion is at t = 0
-        perihelionPos.applyAxisAngle(new Three.Vector3(1, 0, 0), inclinationRad); //rotate z-axes to respect inclination
+        perihelionPos.add(focalPoint);
+        perihelionPos.applyAxisAngle(new Three.Vector3(0, 1, 0), rotationRad);  // Rotate by argument of perihelion
+        perihelionPos.applyAxisAngle(new Three.Vector3(1, 0, 0), inclinationRad); // Rotate by inclination
+        perihelionPos.applyAxisAngle(new Three.Vector3(0, 1, 0), ascendingNodeRad); // Rotate by longitude of ascending node
         orbitingObject.updatePositionInstant(perihelionPos)
     }
 
@@ -283,6 +281,18 @@ const moon = new Planet(
 );
 //initially rotate moon to approximately face the correct side to the earth
 moon.mesh.rotation.y = Math.PI
+//all only approximated values
+const moonOrbit = new Orbit(earth, moon,
+    0.00242383129,
+    0.00270993162,
+    318.15,
+    25.08,
+    6.68,
+    0.0549,
+    new Date(2024, 12, 4, 5, 23),
+    27.321661
+);
+
 // Mars
 const mars = new Planet(
     3389.5,
@@ -397,7 +407,7 @@ export const orbits = [
     mercuryOrbit,
     venusOrbit,
     earthOrbit,
-    //moonOrbit,
+    moonOrbit,
     marsOrbit,
     jupiterOrbit,
     saturnOrbit,
@@ -425,6 +435,7 @@ export function stepRotation(minuteTimeStep) {
     mercury.rotate(84960, minuteTimeStep)
     venus.rotate(-350906, minuteTimeStep)
     earth.rotate(1436, minuteTimeStep)
+    moon.rotate(-39341, minuteTimeStep)
     mars.rotate(1476, minuteTimeStep)
     jupiter.rotate(595, minuteTimeStep)
     saturn.rotate(633, minuteTimeStep)
@@ -432,8 +443,6 @@ export function stepRotation(minuteTimeStep) {
     uranus.rotate(1034, minuteTimeStep)
     neptune.rotate(960, minuteTimeStep)
 
-    moon.orbitObject(earth, 3.5, 39341, minuteTimeStep);
-    moon.rotate(-39341, minuteTimeStep)
 }
 
 export function getFocusedPlanetID(camera, controls) {
