@@ -123,16 +123,21 @@ class Planet {
 
 class Orbit {
     constructor(centerObject, orbitingObject, aphelion, perihelion, rotationArgumentPerihelion, rotationLongitudeAscendingNode, inclination, eccentricity, perihelionTime, orbitalPeriod) {
+        this.perihelionTime = perihelionTime //perihelionTime: Time in UT1~UTC, calculated from Orbital Elements:TP https://ssd.jpl.nasa.gov/horizons/app.html#/
+        this.orbitalPeriod = orbitalPeriod  // float in days
+        this.centerObject = centerObject
+        this.orbitingObject = orbitingObject
+
         aphelion *= scaleDistance * AU
         perihelion *= scaleDistance * AU
         const semi_major = (aphelion + perihelion) / 2;  // Semi-major axis
         const semi_minor = semi_major * Math.sqrt(1 - eccentricity ** 2); // Semi-minor axis
-        const rotationRad = rotationArgumentPerihelion * (Math.PI / 180); //rotation in its own plane
-        const inclinationRad = inclination * (Math.PI / 180); //to invariable plane
-        const ascendingNodeRad = rotationLongitudeAscendingNode * (Math.PI / 180); // Ω (Longitude of Ascending Node)
+        this.rotationRad = rotationArgumentPerihelion * (Math.PI / 180); //rotation in its own plane
+        this.inclinationRad = inclination * (Math.PI / 180); //to invariable plane
+        this.ascendingNodeRad = rotationLongitudeAscendingNode * (Math.PI / 180); // Ω (Longitude of Ascending Node)
 
         const focal_distance = semi_major * eccentricity; // Distance from center of the ellipse to the mass object
-        let focalOffSet = new Three.Vector3(focal_distance,0,0)
+        this.focalOffSet = new Three.Vector3(focal_distance, 0, 0)
 
         this.curve = new Three.EllipseCurve(
             0, 0,
@@ -146,30 +151,31 @@ class Orbit {
         const points3D = points2D.map(p => {
             let pos = new Three.Vector3(p.x, p.y, p.z); // Ensure Z is initialized correctly
             // Move to mass center
-            pos.add(focalOffSet);
-            pos.applyAxisAngle(new Three.Vector3(1, 0, 0), Math.PI / 2); // Rotate from XY plane to XZ plane
-            pos.applyAxisAngle(new Three.Vector3(0, 1, 0), rotationRad);  // Rotate by argument of perihelion
-            pos.applyAxisAngle(new Three.Vector3(1, 0, 0), inclinationRad); // Rotate by inclination
-            pos.applyAxisAngle(new Three.Vector3(0, 1, 0), ascendingNodeRad); // Rotate by longitude of ascending node
-            pos.add(centerObject.mesh.position)
+            this.applyOrbitalTransform(pos)
             return pos;
         });
         const geometry = new Three.BufferGeometry().setFromPoints(points3D);
         const material = new Three.LineBasicMaterial({color: 0xff0000});
         this.ellipse = new Three.Line(geometry, material);
-
-        //perihelionTime: Time in UT1, calculated from Orbital Elements:TP https://ssd.jpl.nasa.gov/horizons/app.html#/
-        const perihelionPos = this.curve.getPointAt(0.5, new Three.Vector3()) // Perihelion is at t = 0
-        perihelionPos.add(focalOffSet);
-        perihelionPos.applyAxisAngle(new Three.Vector3(0, 1, 0), rotationRad);  // Rotate by argument of perihelion
-        perihelionPos.applyAxisAngle(new Three.Vector3(1, 0, 0), inclinationRad); // Rotate by inclination
-        perihelionPos.applyAxisAngle(new Three.Vector3(0, 1, 0), ascendingNodeRad); // Rotate by longitude of ascending node
-        perihelionPos.add(centerObject.mesh.position)
-        orbitingObject.updatePositionInstant(perihelionPos)
+        this.updateTimePosition(Date.now())
     }
 
     updateTimePosition(newTime) {
+        const timeDifferenceDays = (newTime - this.perihelionTime.getTime()) / 86_400_000 //Period in days
+        const timeDifferenceOrbits = timeDifferenceDays / this.orbitalPeriod + 0.5 // Perihelion is at 0.5
+        const timedPosition = ((timeDifferenceOrbits) % 1 + 1) % 1 //always positive
+        const newTimedPos = this.curve.getPointAt(timedPosition, new Three.Vector3()) // Perihelion is at t = 0
+        this.applyOrbitalTransform(newTimedPos);
+        this.orbitingObject.updatePositionInstant(newTimedPos)
+    }
 
+    applyOrbitalTransform(newPos) {
+        newPos.add(this.focalOffSet);
+        newPos.applyAxisAngle(new Three.Vector3(1, 0, 0), Math.PI / 2); // Rotate from XY plane to XZ plane
+        newPos.applyAxisAngle(new Three.Vector3(0, 1, 0), this.rotationRad);  // Rotate by argument of perihelion
+        newPos.applyAxisAngle(new Three.Vector3(1, 0, 0), this.inclinationRad); // Rotate by inclination
+        newPos.applyAxisAngle(new Three.Vector3(0, 1, 0), this.ascendingNodeRad); // Rotate by longitude of ascending node
+        newPos.add(this.centerObject.mesh.position)
     }
 
     addToScene(scene) {
@@ -228,7 +234,7 @@ const mercuryOrbit = new Orbit(sun, mercury,
     48.331,
     6.35,
     0.205630,
-    new Date(2025, 3, 4, 13, 40),
+    new Date(Date.UTC(2025, 3, 4, 13, 40)),
     87.9691
 );
 
@@ -247,7 +253,7 @@ const venusOrbit = new Orbit(sun, venus,
     76.680,
     2.15,
     0.006772,
-    new Date(2025, 2, 19, 19, 44),
+    new Date(Date.UTC(2025, 2, 19, 19, 44)),
     224.701
 );
 
@@ -267,7 +273,7 @@ const earthOrbit = new Orbit(sun, earth,
     -11.26064,
     1.57869,
     0.0167086,
-    new Date(2025, 1, 5, 1, 22),
+    new Date(Date.UTC(2025, 1, 5, 1, 22)),
     365.256363004
 );
 
@@ -289,7 +295,7 @@ const moonOrbit = new Orbit(earth, moon,
     25.08,
     6.68,
     0.0549,
-    new Date(2024, 12, 4, 5, 23),
+    new Date(Date.UTC(2024, 12, 4, 5, 23)),
     27.321661
 );
 
@@ -307,7 +313,7 @@ const marsOrbit = new Orbit(sun, mars,
     49.578,
     1.63,
     0.0934,
-    new Date(2024, 5, 8, 11, 31),
+    new Date(Date.UTC(2024, 5, 8, 11, 31)),
     686.980
 );
 
@@ -325,7 +331,7 @@ const jupiterOrbit = new Orbit(sun, jupiter,
     100.464,
     0.32,
     0.0489,
-    new Date(2023, 1, 21),
+    new Date(Date.UTC(2023, 1, 21)),
     4332.59
 );
 
@@ -349,7 +355,7 @@ const saturnOrbit = new Orbit(sun, saturn,
     113.665,
     0.93,
     0.0565,
-    new Date(2032, 10, 25),
+    new Date(Date.UTC(2032, 10, 25)),
     10755.70
 );
 
@@ -368,7 +374,7 @@ const uranusOrbit = new Orbit(sun, uranus,
     74.006,
     0.99,
     0.04717,
-    new Date(2049, 7, 22),
+    new Date(Date.UTC(2049, 7, 22)),
     30688.5
 );
 
@@ -386,7 +392,7 @@ const neptuneOrbit = new Orbit(sun, neptune,
     131.783,
     0.74,
     0.008678,
-    new Date(2043, 8, 20),
+    new Date(Date.UTC(2043, 8, 20)),
     60195
 );
 
@@ -417,31 +423,17 @@ export const orbits = [
 
 
 export function stepRotation(minuteTimeStep) {
-    /*rotation values are calculated by:
-    Sun: 25d 9h 7m
-    Mercury: 58d 16h
-    Venus: 243d 26m
-    Earth: 23h 56m
-    Moon: locked:  27d 7h 41m
-    Mars: 24h 36m
-    Jupiter: 9h 55m
-    Saturn: 10h 33m
-    Saturn main rings: 5h-14h =>using 12h
-    Uranus: 17h 14m
-    Neptune: 16h
-    Calculated value in minutes:
-    */
-    sun.rotate(36567, minuteTimeStep)
-    mercury.rotate(84960, minuteTimeStep)
-    venus.rotate(-350906, minuteTimeStep)
-    earth.rotate(1436, minuteTimeStep)
-    moon.rotate(-39341, minuteTimeStep)
-    mars.rotate(1476, minuteTimeStep)
-    jupiter.rotate(595, minuteTimeStep)
-    saturn.rotate(633, minuteTimeStep)
-    saturn.donut.rotate(720, minuteTimeStep)
-    uranus.rotate(1034, minuteTimeStep)
-    neptune.rotate(960, minuteTimeStep)
+    sun.rotate(36567, minuteTimeStep) //Sun: 25d 9h 7m
+    mercury.rotate(84960, minuteTimeStep) //Mercury: 58d 16h
+    venus.rotate(-350906, minuteTimeStep) //Venus: 243d 26m
+    earth.rotate(1436, minuteTimeStep) //Earth: 23h 56m
+    moon.rotate(-39341, minuteTimeStep) //Moon: locked:  27d 7h 41m
+    mars.rotate(1476, minuteTimeStep) //Mars: 24h 36m
+    jupiter.rotate(595, minuteTimeStep) //Jupiter: 9h 55m
+    saturn.rotate(633, minuteTimeStep) //Saturn: 10h 33m
+    saturn.donut.rotate(720, minuteTimeStep) //Saturn main rings: 5h-14h =>using 12h
+    uranus.rotate(1034, minuteTimeStep) //Uranus: 17h 14m
+    neptune.rotate(960, minuteTimeStep) //Neptune: 16h
 
 }
 
