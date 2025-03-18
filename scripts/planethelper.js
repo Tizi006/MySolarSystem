@@ -132,8 +132,7 @@ class Orbit {
         const ascendingNodeRad = rotationLongitudeAscendingNode * (Math.PI / 180); // Ω (Longitude of Ascending Node)
 
         const focal_distance = semi_major * eccentricity; // Distance from center of the ellipse to the mass object
-        let focalPoint = new Three.Vector3().copy(centerObject.mesh.position);
-        focalPoint.x += focal_distance
+        let focalOffSet = new Three.Vector3(focal_distance,0,0)
 
         this.curve = new Three.EllipseCurve(
             0, 0,
@@ -147,24 +146,25 @@ class Orbit {
         const points3D = points2D.map(p => {
             let pos = new Three.Vector3(p.x, p.y, p.z); // Ensure Z is initialized correctly
             // Move to mass center
-            pos.add(focalPoint);
+            pos.add(focalOffSet);
+            pos.applyAxisAngle(new Three.Vector3(1, 0, 0), Math.PI / 2); // Rotate from XY plane to XZ plane
+            pos.applyAxisAngle(new Three.Vector3(0, 1, 0), rotationRad);  // Rotate by argument of perihelion
+            pos.applyAxisAngle(new Three.Vector3(1, 0, 0), inclinationRad); // Rotate by inclination
+            pos.applyAxisAngle(new Three.Vector3(0, 1, 0), ascendingNodeRad); // Rotate by longitude of ascending node
+            pos.add(centerObject.mesh.position)
             return pos;
         });
         const geometry = new Three.BufferGeometry().setFromPoints(points3D);
         const material = new Three.LineBasicMaterial({color: 0xff0000});
         this.ellipse = new Three.Line(geometry, material);
 
-        this.ellipse.rotateOnWorldAxis(new Three.Vector3(1, 0, 0), Math.PI / 2);  // Rotate from XY plane to XZ plane
-        this.ellipse.rotateOnWorldAxis(new Three.Vector3(0, 1, 0), rotationRad);  // Rotate by argument of perihelion
-        this.ellipse.rotateOnWorldAxis(new Three.Vector3(1, 0, 0), inclinationRad); // Rotate by inclination
-        this.ellipse.rotateOnWorldAxis(new Three.Vector3(0, 1, 0), ascendingNodeRad); // Rotate by longitude of ascending node
-
         //perihelionTime: Time in UT1, calculated from Orbital Elements:TP https://ssd.jpl.nasa.gov/horizons/app.html#/
         const perihelionPos = this.curve.getPointAt(0.5, new Three.Vector3()) // Perihelion is at t = 0
-        perihelionPos.add(focalPoint);
+        perihelionPos.add(focalOffSet);
         perihelionPos.applyAxisAngle(new Three.Vector3(0, 1, 0), rotationRad);  // Rotate by argument of perihelion
         perihelionPos.applyAxisAngle(new Three.Vector3(1, 0, 0), inclinationRad); // Rotate by inclination
         perihelionPos.applyAxisAngle(new Three.Vector3(0, 1, 0), ascendingNodeRad); // Rotate by longitude of ascending node
+        perihelionPos.add(centerObject.mesh.position)
         orbitingObject.updatePositionInstant(perihelionPos)
     }
 
