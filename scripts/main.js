@@ -19,9 +19,9 @@ camera.position.set(40, 0, -100)
 
 //orbit control
 const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableZoom = true;
-controls.enableRotate = true;
-controls.enablePan = true;
+controls.enableZoom = false;
+controls.enableRotate = false;
+controls.enablePan = false;
 controls.target.set(0, 0, 0);
 
 //light
@@ -38,8 +38,8 @@ scene.background = backgroundTexture;
 scene.add(light);
 scene.add(lightUniversal);
 scene.add(lightUniversal.target)
-ph.planets.forEach(p=>p.addToScene(scene))
-ph.orbits.forEach(o=>o.addToScene(scene))
+ph.planets.forEach(p => p.addToScene(scene))
+ph.orbits.forEach(o => o.addToScene(scene))
 renderer.render(scene, camera);
 
 
@@ -58,22 +58,14 @@ function incrementValue(value, target) {
 
 function animate() {
     requestAnimationFrame(animate);
-    const currentPlanetID = ph.getFocusedPlanetID(camera, controls)
-    const currentPlanetPosition = ph.planets[currentPlanetID].mesh.position;
-    setBoxVisibility(currentPlanetID);
-
-    if (!((currentPlanetPosition - controls.target) > 0.1)) {
-        //controls.target.lerp(currentPlanetPosition, 0.05);
-    }
+    updateCamera()
     /*set camera fov*/
-    if (camera.position.z < ph.triggerPoints[4] && camera.position.z > ph.triggerPoints[3]) {
+    if (distance < ph.triggerPoints[4] && distance > ph.triggerPoints[3]) {
         camera.fov = incrementValue(camera.fov, 5);
     } else {
         camera.fov = incrementValue(camera.fov, 60)
     }
     camera.updateProjectionMatrix();
-
-
     controls.update();
     renderer.render(scene, camera);
 }
@@ -82,57 +74,51 @@ export const simulationTime = new Date(Date.now()); // In UTC
 setInterval(() => {
     ph.stepRotation(getCurrentTimeIncrement() / 100);
 
-    simulationTime.setTime(simulationTime.getTime() + getCurrentTimeIncrement()*60*10);
+    simulationTime.setTime(simulationTime.getTime() + getCurrentTimeIncrement() * 60 * 10);
     ph.stepTime(simulationTime.getTime())
     updateDate(simulationTime)
 }, 1000 / 100);
 
-function moveCamera() {
+
+let distance = 30
+function updateCameraDistance() {
     const scrollY = window.scrollY;
     const scrollProgress = scrollY / 10;
-    //set camera position
-    if (scrollProgress < 240) {
-        camera.position.z = scrollProgress;
-    } else {
-        camera.position.z = ((scrollProgress - 240) * 5) + 240;
+    const translatedDistance =scrollProgress < 240 ? scrollProgress : ((scrollProgress - 240) * 5) + 240
+    distance = translatedDistance+30
+}
+
+function updateCamera() {
+    const currentPlanetID = ph.getFocusedPlanetID(distance, controls)
+    const currentPlanetPosition = ph.planets[currentPlanetID].mesh.position;
+    setBoxVisibility(currentPlanetID);
+
+    //focus
+    if (!((currentPlanetPosition - controls.target) > 0.1)) {
+        controls.target.lerp(currentPlanetPosition, 0.05);
     }
-    //position of the camera left/right of a planet
-    const targetPositions = [
-        {trigger: ph.triggerPoints[0], x: 40},
-        {trigger: ph.triggerPoints[1], x: 1.5},
-        {trigger: ph.triggerPoints[2], x: -2.7},
-        {trigger: ph.triggerPoints[3], x: 3.3},
-        {trigger: ph.triggerPoints[5], x: 1.8},
-        {trigger: ph.triggerPoints[6], x: -30},
-        {trigger: ph.triggerPoints[7], x: 30},
-        {trigger: ph.triggerPoints[8], x: 16},
-        {trigger: ph.triggerPoints[9], x: 15}
-    ];
+    //position
+    const angle = ph.planets[currentPlanetID].getCameraAngle()
+    const xDistance = distance * Math.cos(angle);
+    const zDistance = distance * Math.sin(angle);
 
-    // Loop through each target position
-    for (let i = 0; i < targetPositions.length; i++) {
-        const {trigger, x} = targetPositions[i];
-
-        // First triggerPoint where the camera is before the certain point
-        if (camera.position.z < trigger) {
-            // Only adjust the x position if it's not already close enough
-            if (Math.abs(camera.position.x - x) > 0.1) {
-                const targetPosition = new Three.Vector3(x, camera.position.y, camera.position.z);
-                camera.position.lerp(targetPosition, 0.1);
-            }
-            break; // Exit the loop once the camera reaches the target
-        }
+    // Only adjust the position if it's not already close enough
+    if (Math.abs(camera.position.x - xDistance) > 0.1 || Math.abs(camera.position.z - zDistance) > 0.1) {
+        const targetPosition = new Three.Vector3(xDistance, camera.position.y, zDistance);
+        camera.position.lerp(targetPosition, 0.1);
     }
 }
 
 window.addEventListener('resize', () => {
     // Update camera
-    camera.aspect = window.innerWidth/window.innerHeight
+    camera.aspect = window.innerWidth / window.innerHeight
     camera.updateProjectionMatrix()
     //update renderer
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
 })
 
-//window.addEventListener('scroll', () => {moveCamera()});
+window.addEventListener('scroll', () => {
+    updateCameraDistance()
+});
 animate();

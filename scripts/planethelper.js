@@ -17,7 +17,7 @@ import neptuneTextureUrl from '../images/textures/2kCompressed/2k_neptune.webp';
 const scalePlanet = 1 / 5000
 const scaleDistance = 1 / 1000000
 const AU = 149597870.700
-const planetPosition = [0, 0.466697, 0.728213, 1, 1.3, 1.666206, 5.4570, 10.1238, 20.0965, 30.33];
+const planetPosition = [0, 0.466697, 0.728213, 1, 1.1, 1.666206, 5.4570, 10.1238, 20.0965, 30.33];
 export const triggerPoints = [
     planetPosition[1] - 0.1,
     planetPosition[2] - 0.1,
@@ -44,7 +44,6 @@ class Planet {
             }));
         this.mesh.position.set(position.x, position.y, position.z)
         this.mesh.rotation.x = axialTiltDegrees * (Math.PI / 180)
-        this.accumulatedAngle = 0;
         //axel
         const axelWidth = sphereGeometry.parameters.radius * 0.02
         this.rotationAxel = new Three.Mesh(
@@ -118,6 +117,13 @@ class Planet {
             this.donut.mesh.position.lerp(newPos, 0.5)
         }
     }
+
+    getCameraAngle() {
+        //full 360 degree angle
+        const x = this.mesh.position.x;
+        const z = this.mesh.position.z;
+        return Math.atan2(z, x);
+    }
 }
 
 
@@ -146,7 +152,12 @@ class Orbit {
             false,            // aClockwise
             0
         );
+        const material = new Three.LineBasicMaterial({color: 0xff0000});
+        this.ellipse = new Three.Line(this.calculateEllipseGeometry(), material);
+        this.updateTimePosition(Date.now())
+    }
 
+    calculateEllipseGeometry() {
         const points2D = this.curve.getPoints(100);
         const points3D = points2D.map(p => {
             let pos = new Three.Vector3(p.x, p.y, p.z); // Ensure Z is initialized correctly
@@ -154,19 +165,20 @@ class Orbit {
             this.applyOrbitalTransform(pos)
             return pos;
         });
-        const geometry = new Three.BufferGeometry().setFromPoints(points3D);
-        const material = new Three.LineBasicMaterial({color: 0xff0000});
-        this.ellipse = new Three.Line(geometry, material);
-        this.updateTimePosition(Date.now())
+        return new Three.BufferGeometry().setFromPoints(points3D);
     }
 
     updateTimePosition(newTime) {
         const timeDifferenceDays = (newTime - this.perihelionTime.getTime()) / 86_400_000 //Period in days
         const timeDifferenceOrbits = timeDifferenceDays / this.orbitalPeriod + 0.5 // Perihelion is at 0.5
-        const timedPosition =  (1-(timeDifferenceOrbits % 1+ 1) % 1) //always positive, needs to be flipped for the correct direction
-        const newTimedPos = this.curve.getPointAt(timedPosition, new Three.Vector3()) // Perihelion is at t = 0
+        const timedPosition = (1 - (timeDifferenceOrbits % 1 + 1) % 1) //always positive, needs to be flipped for the correct direction
+        const newTimedPos = this.curve.getPointAt(timedPosition, new Three.Vector3())
         this.applyOrbitalTransform(newTimedPos);
-        this.orbitingObject.updatePositionInstant(newTimedPos)
+        this.orbitingObject.updatePositionGradual(newTimedPos)
+        //little hacky, but only updated ellipse for non sun orbiting objects
+        if (this.centerObject.mesh.position.x !== 0) {
+            this.ellipse.geometry = this.calculateEllipseGeometry()
+        }
     }
 
     applyOrbitalTransform(newPos) {
@@ -289,8 +301,8 @@ const moon = new Planet(
 moon.mesh.rotation.y = Math.PI
 //all only approximated values
 const moonOrbit = new Orbit(earth, moon,
-    0.00242383129,
-    0.00270993162,
+    0.00242383129 + 0.02,//unrealistic scales, moon would be in earth
+    0.00270993162 + 0.02,
     318.15,
     25.08,
     6.68,
@@ -421,9 +433,10 @@ export const orbits = [
     neptuneOrbit
 ];
 
-export function stepTime(simulationTime){
-    orbits.forEach(o=>o.updateTimePosition(simulationTime))
+export function stepTime(simulationTime) {
+    orbits.forEach(o => o.updateTimePosition(simulationTime))
 }
+
 export function stepRotation(minuteTimeStep) {
     sun.rotate(36567, minuteTimeStep) //Sun: 25d 9h 7m
     mercury.rotate(84960, minuteTimeStep) //Mercury: 58d 16h
@@ -439,12 +452,12 @@ export function stepRotation(minuteTimeStep) {
 
 }
 
-export function getFocusedPlanetID(camera, controls) {
+export function getFocusedPlanetID(cameraDistance, controls) {
     for (let i = 0; i < planets.length; i++) {
         // Check if the camera is within the correct trigger point range
         if (
-            (i === 0 && camera.position.z < triggerPoints[i]) || // Special case for the Sun
-            (i > 0 && camera.position.z <= triggerPoints[i] && camera.position.z > triggerPoints[i - 1])
+            (i === 0 && cameraDistance < triggerPoints[i]) || // Special case for the Sun
+            (i > 0 && cameraDistance <= triggerPoints[i] && cameraDistance > triggerPoints[i - 1])
         ) {
             if (controls.target !== planets[i].mesh.position) {
                 return i;

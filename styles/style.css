@@ -128,7 +128,7 @@ svg {
     height: 12000px;
 }
 #bg{
-
+    pointer-events: none;
     z-index: -1;
 }
 
