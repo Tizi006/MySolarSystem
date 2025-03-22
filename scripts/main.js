@@ -4,7 +4,7 @@ import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
 import * as ph from './planethelper.js'
 //initialize images
 import backgroundUrl from '../images/textures/2kCompressed/8k_stars_milky_way.webp'
-import {setBoxVisibility, getCurrentTimeIncrement} from "./user-events.js";
+import {setBoxVisibility, getCurrentTimeIncrement, updateDate} from "./user-events.js";
 
 /*Initialize scene*/
 const scene = new Three.Scene();
@@ -78,8 +78,13 @@ function animate() {
     renderer.render(scene, camera);
 }
 
+export const simulationTime = new Date(Date.now()); // In UTC
 setInterval(() => {
     ph.stepRotation(getCurrentTimeIncrement() / 100);
+
+    simulationTime.setTime(simulationTime.getTime() + getCurrentTimeIncrement()*60*10);
+    ph.stepTime(simulationTime.getTime())
+    updateDate(simulationTime)
 }, 1000 / 100);
 
 function moveCamera() {

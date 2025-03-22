@@ -55,6 +55,11 @@ svg {
 .contentBox-left {
     left: 100px;
 }
+.contentBox-spaced{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
 
 .contentBox-right {
     bottom: 2%;
@@ -128,10 +133,6 @@ svg {
 }
 
 /* small classes*/
-.flex-container-colum{
-    display: flex;
-    flex-direction: column;
-}
 .flex-container{
     display: flex;
 }

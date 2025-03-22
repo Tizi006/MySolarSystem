@@ -421,7 +421,9 @@ export const orbits = [
     neptuneOrbit
 ];
 
-
+export function stepTime(simulationTime){
+    orbits.forEach(o=>o.updateTimePosition(simulationTime))
+}
 export function stepRotation(minuteTimeStep) {
     sun.rotate(36567, minuteTimeStep) //Sun: 25d 9h 7m
     mercury.rotate(84960, minuteTimeStep) //Mercury: 58d 16h

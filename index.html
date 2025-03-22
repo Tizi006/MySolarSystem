@@ -42,10 +42,12 @@
         </div>
         <div id="settings-display">
             <h1> Settings</h1>
-            <div class="flex-container-colum">
-                <label for="time-slider">Time Increment:<span id="slider-value"></span></label>
-                <input type="range" id="time-slider" min="0" max="17" value="6" step="1"/>
+            <div class="contentBox-spaced">
+                <div id="date-display"></div>
+                <label for="time-slider"><span id="slider-value"></span></label>
+                <div id="time-display"></div>
             </div>
+                <input type="range" id="time-slider" min="0" max="17" value="6" step="1"/>
             <div class="flex-container">
                 <label class="switch">
                     <input type="checkbox" id="toggle-rotation-axel">
