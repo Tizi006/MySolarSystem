@@ -163,7 +163,7 @@ class Orbit {
     updateTimePosition(newTime) {
         const timeDifferenceDays = (newTime - this.perihelionTime.getTime()) / 86_400_000 //Period in days
         const timeDifferenceOrbits = timeDifferenceDays / this.orbitalPeriod + 0.5 // Perihelion is at 0.5
-        const timedPosition = ((timeDifferenceOrbits) % 1 + 1) % 1 //always positive
+        const timedPosition =  (1-(timeDifferenceOrbits % 1+ 1) % 1) //always positive, needs to be flipped for the correct direction
         const newTimedPos = this.curve.getPointAt(timedPosition, new Three.Vector3()) // Perihelion is at t = 0
         this.applyOrbitalTransform(newTimedPos);
         this.orbitingObject.updatePositionInstant(newTimedPos)
