@@ -86,13 +86,13 @@ function updateCameraDistance() {
     const scrollY = window.scrollY;
     const documentHeight = document.documentElement.scrollHeight - window.innerHeight;
     scrollProgress = documentHeight > 0 ? scrollY / documentHeight : 0; // Normalize (0 to 1)
-    const translatedDistance =scrollProgress < 0.25 ? scrollProgress : (0.25+(scrollProgress-0.25)*10)
+    const translatedDistance =scrollProgress < 0.35 ? scrollProgress : (0.35+(scrollProgress-0.35)*10)
     distance = translatedDistance*700+30
 }
 
 function updateCamera() {
     let currentPlanetPosition;
-    if(scrollProgress>0.9){
+    if(scrollProgress>0.98){
         currentPlanetPosition = ph.planets[0].mesh.position;
         const targetPosition = new Three.Vector3(0, distance, 0);
         camera.position.lerp(targetPosition, 0.005);

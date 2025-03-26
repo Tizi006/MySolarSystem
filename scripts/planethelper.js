@@ -17,13 +17,13 @@ import neptuneTextureUrl from '../images/textures/2kCompressed/2k_neptune.webp';
 const scalePlanet = 1 / 5000
 const scaleDistance = 1 / 1000000
 const AU = 149597870.700
-const planetPosition = [0, 0.466697, 0.728213, 1, 1.1, 1.666206, 5.4570, 10.1238, 20.0965, 30.33];
+const planetPosition = [0, 0.466697, 0.728213, 1, 1, 1.666206, 5.4570, 10.1238, 20.0965, 30.33];
 export const triggerPoints = [
-    planetPosition[1] - 0.1,
-    planetPosition[2] - 0.1,
+    planetPosition[1] - 0.2,
+    planetPosition[2] - 0.2,
     planetPosition[3] - 0.1,
-    planetPosition[4] - 0.01,
-    planetPosition[5] - 0.13,
+    planetPosition[4] + 0.1,
+    planetPosition[5] - 0.2,
     planetPosition[6] - 2,
     planetPosition[7] - 2,
     planetPosition[8] - 2.5,
@@ -120,9 +120,10 @@ class Planet {
 
     getCameraAngle() {
         //full 360 degree angle
+        const cameraShift = Math.atan2(3 * this.mesh.geometry.parameters.radius, this.mesh.position.length());
         const x = this.mesh.position.x;
         const z = this.mesh.position.z;
-        return Math.atan2(z, x);
+        return Math.atan2(z, x)+cameraShift;
     }
 }
 
