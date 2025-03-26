@@ -21,13 +21,13 @@ function togglePlanetBox() {
     }
 }
 
-export function setBoxVisibility(planetID) {
+export function setBoxVisibility(boxID) {
     const Box = [
-        'Sun', 'Mercury', 'Venus', 'Earth', 'Moon', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune'
+        'Sun', 'Mercury', 'Venus', 'Earth', 'Moon', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune','Solar-system'
     ].map(id => document.getElementById(id));
     if (boxTrigger === true) {
         Box.forEach(planet => planet.style.visibility = 'hidden');
-        Box[planetID].style.visibility = 'visible';
+        Box[boxID].style.visibility = 'visible';
     }
 }
 

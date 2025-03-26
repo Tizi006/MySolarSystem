@@ -81,31 +81,42 @@ setInterval(() => {
 
 
 let distance = 30
+let scrollProgress =0
 function updateCameraDistance() {
     const scrollY = window.scrollY;
-    const scrollProgress = scrollY / 10;
-    const translatedDistance =scrollProgress < 240 ? scrollProgress : ((scrollProgress - 240) * 5) + 240
-    distance = translatedDistance+30
+    const documentHeight = document.documentElement.scrollHeight - window.innerHeight;
+    scrollProgress = documentHeight > 0 ? scrollY / documentHeight : 0; // Normalize (0 to 1)
+    const translatedDistance =scrollProgress < 0.25 ? scrollProgress : (0.25+(scrollProgress-0.25)*10)
+    distance = translatedDistance*700+30
 }
 
 function updateCamera() {
-    const currentPlanetID = ph.getFocusedPlanetID(distance, controls)
-    const currentPlanetPosition = ph.planets[currentPlanetID].mesh.position;
-    setBoxVisibility(currentPlanetID);
+    let currentPlanetPosition;
+    if(scrollProgress>0.9){
+        currentPlanetPosition = ph.planets[0].mesh.position;
+        const targetPosition = new Three.Vector3(0, distance, 0);
+        camera.position.lerp(targetPosition, 0.005);
+        setBoxVisibility(10);
+    }
+    else {
+        const currentPlanetID = ph.getFocusedPlanetID(distance, controls)
+        currentPlanetPosition = ph.planets[currentPlanetID].mesh.position;
+        setBoxVisibility(currentPlanetID);
 
+        //position
+        const angle = ph.planets[currentPlanetID].getCameraAngle()
+        const xDistance = distance * Math.cos(angle);
+        const zDistance = distance * Math.sin(angle);
+
+        // Only adjust the position if it's not already close enough
+        if (Math.abs(camera.position.x - xDistance) > 0.1 || Math.abs(camera.position.z - zDistance) > 0.1) {
+            const targetPosition = new Three.Vector3(xDistance, 0, zDistance);
+            camera.position.lerp(targetPosition, 0.1);
+        }
+    }
     //focus
     if (!((currentPlanetPosition - controls.target) > 0.1)) {
         controls.target.lerp(currentPlanetPosition, 0.05);
-    }
-    //position
-    const angle = ph.planets[currentPlanetID].getCameraAngle()
-    const xDistance = distance * Math.cos(angle);
-    const zDistance = distance * Math.sin(angle);
-
-    // Only adjust the position if it's not already close enough
-    if (Math.abs(camera.position.x - xDistance) > 0.1 || Math.abs(camera.position.z - zDistance) > 0.1) {
-        const targetPosition = new Three.Vector3(xDistance, camera.position.y, zDistance);
-        camera.position.lerp(targetPosition, 0.1);
     }
 }
 
