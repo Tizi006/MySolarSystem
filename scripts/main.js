@@ -4,7 +4,9 @@ import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
 import * as ph from './planethelper.js'
 //initialize images
 import backgroundUrl from '../images/textures/2kCompressed/8k_stars_milky_way.webp'
-import {setBoxVisibility, getCurrentTimeIncrement} from "./user-events.js";
+import {setBoxVisibility, getCurrentTimeIncrement, updateDate, syncVisibilityWithUI} from "./user-events.js";
+
+export const simulationTime = new Date(Date.now()); // In UTC
 
 /*Initialize scene*/
 const scene = new Three.Scene();
@@ -38,19 +40,11 @@ scene.background = backgroundTexture;
 scene.add(light);
 scene.add(lightUniversal);
 scene.add(lightUniversal.target)
-ph.sun.addToScene(scene)
-ph.mercury.addToScene(scene)
-ph.venus.addToScene(scene)
-ph.addVenusAtmosphere(scene)
-ph.earth.addToScene(scene)
-ph.addEarthAtmosphere(scene)
-ph.moon.addToScene(scene)
-ph.mars.addToScene(scene)
-ph.jupiter.addToScene(scene)
-ph.saturn.addToScene(scene)
-scene.add(ph.saturnRing.mesh);
-ph.uranus.addToScene(scene)
-ph.neptune.addToScene(scene)
+
+ph.createPlanetsAndOrbits(simulationTime,scene)
+
+syncVisibilityWithUI()
+
 renderer.render(scene, camera);
 
 
@@ -69,76 +63,77 @@ function incrementValue(value, target) {
 
 function animate() {
     requestAnimationFrame(animate);
-    const currentPlanetID = ph.getFocusedPlanetID(camera, controls)
-    const currentPlanetPosition = ph.planets[currentPlanetID].mesh.position;
-    setBoxVisibility(currentPlanetID);
-
-    if (!((currentPlanetPosition - controls.target) > 0.1)) {
-        controls.target.lerp(currentPlanetPosition, 0.05);
-    }
+    updateCamera()
     /*set camera fov*/
-    if (camera.position.z < ph.triggerPoints[4] && camera.position.z > ph.triggerPoints[3]) {
+    if (distance < ph.triggerPoints[4] && distance > ph.triggerPoints[3]) {
         camera.fov = incrementValue(camera.fov, 5);
     } else {
         camera.fov = incrementValue(camera.fov, 60)
     }
     camera.updateProjectionMatrix();
-
-
     controls.update();
     renderer.render(scene, camera);
 }
 
 setInterval(() => {
     ph.stepRotation(getCurrentTimeIncrement() / 100);
+
+    simulationTime.setTime(simulationTime.getTime() + getCurrentTimeIncrement() * 60 * 10);
+    ph.stepTime(simulationTime.getTime())
+    updateDate(simulationTime)
 }, 1000 / 100);
 
-function moveCamera() {
+
+let distance = 30
+let scrollProgress =0
+function updateCameraDistance() {
     const scrollY = window.scrollY;
-    const scrollProgress = scrollY / 10;
-    //set camera position
-    if (scrollProgress < 240) {
-        camera.position.z = scrollProgress;
-    } else {
-        camera.position.z = ((scrollProgress - 240) * 5) + 240;
+    const documentHeight = document.documentElement.scrollHeight - window.innerHeight;
+    scrollProgress = documentHeight > 0 ? scrollY / documentHeight : 0; // Normalize (0 to 1)
+    const translatedDistance =scrollProgress < 0.35 ? scrollProgress : (0.35+(scrollProgress-0.35)*10)
+    distance = translatedDistance*700+30
+}
+
+function updateCamera() {
+    let currentPlanetPosition;
+    if(scrollProgress>0.98){
+        currentPlanetPosition = ph.planets[0].mesh.position;
+        const targetPosition = new Three.Vector3(0, distance, 0);
+        camera.position.lerp(targetPosition, 0.005);
+        setBoxVisibility(10);
     }
-    //position of the camera left/right of a planet
-    const targetPositions = [
-        {trigger: ph.triggerPoints[0], x: 40},
-        {trigger: ph.triggerPoints[1], x: 1.5},
-        {trigger: ph.triggerPoints[2], x: -2.7},
-        {trigger: ph.triggerPoints[3], x: 3.3},
-        {trigger: ph.triggerPoints[5], x: 1.8},
-        {trigger: ph.triggerPoints[6], x: -30},
-        {trigger: ph.triggerPoints[7], x: 30},
-        {trigger: ph.triggerPoints[8], x: 16},
-        {trigger: ph.triggerPoints[9], x: 15}
-    ];
+    else {
+        const currentPlanetID = ph.getFocusedPlanetID(distance, controls)
+        currentPlanetPosition = ph.planets[currentPlanetID].mesh.position;
+        setBoxVisibility(currentPlanetID);
 
-    // Loop through each target position
-    for (let i = 0; i < targetPositions.length; i++) {
-        const {trigger, x} = targetPositions[i];
+        //position
+        const angle = ph.planets[currentPlanetID].getCameraAngle()
+        const xDistance = distance * Math.cos(angle);
+        const zDistance = distance * Math.sin(angle);
 
-        // First triggerPoint where the camera is before the certain point
-        if (camera.position.z < trigger) {
-            // Only adjust the x position if it's not already close enough
-            if (Math.abs(camera.position.x - x) > 0.1) {
-                const targetPosition = new Three.Vector3(x, camera.position.y, camera.position.z);
-                camera.position.lerp(targetPosition, 0.1);
-            }
-            break; // Exit the loop once the camera reaches the target
+        // Only adjust the position if it's not already close enough
+        if (Math.abs(camera.position.x - xDistance) > 0.1 || Math.abs(camera.position.z - zDistance) > 0.1) {
+            const targetPosition = new Three.Vector3(xDistance, 0, zDistance);
+            camera.position.lerp(targetPosition, 0.1);
         }
+    }
+    //focus
+    if (!((currentPlanetPosition - controls.target) > 0.1)) {
+        controls.target.lerp(currentPlanetPosition, 0.05);
     }
 }
 
 window.addEventListener('resize', () => {
     // Update camera
-    camera.aspect = window.innerWidth/window.innerHeight
+    camera.aspect = window.innerWidth / window.innerHeight
     camera.updateProjectionMatrix()
     //update renderer
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
 })
 
-window.addEventListener('scroll', () => {moveCamera()});
+window.addEventListener('scroll', () => {
+    updateCameraDistance()
+});
 animate();

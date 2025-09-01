@@ -37,22 +37,30 @@
         <div id="info-display">
             <h1> Numbers for Nerds:</h1>
             <h3>Distances:</h3>
-            <p>Sun size: 50.000km per 1 Unit</p>
-            <p>Planet size: 10.000km per 1 Unit</p>
+            <p>Planet/Sun size: 5.000km per 1 Unit</p>
             <p>Planet distance: 1.000.000km per 1 Unit</p>
         </div>
         <div id="settings-display">
             <h1> Settings</h1>
-            <div class="flex-container-colum">
-                <label for="time-slider">Time Increment:<span id="slider-value"></span></label>
-                <input type="range" id="time-slider" min="0" max="17" value="6" step="1"/>
+            <div class="contentBox-spaced">
+                <div id="date-display"></div>
+                <label for="time-slider"><span id="slider-value"></span></label>
+                <div id="time-display"></div>
             </div>
+                <input type="range" id="time-slider" min="0" max="36" value="30" step="1"/>
             <div class="flex-container">
                 <label class="switch">
                     <input type="checkbox" id="toggle-rotation-axel">
                     <span class="slider"></span>
                 </label>
                 <label for="toggle-rotation-axel">Show rotation axel</label>
+            </div>
+            <div class="flex-container">
+                <label class="switch">
+                    <input type="checkbox" id="toggle-orbit-ellipse">
+                    <span class="slider"></span>
+                </label>
+                <label for="toggle-rotation-axel">Show orbits</label>
             </div>
         </div>
     </div>
@@ -211,6 +219,18 @@
             sea and has the astronomical symbol ♆, representing Neptune's trident.
         </div>
     </div>
+    <div class="contentBox-right" id="Solar-system">
+        <img src="images/planetPictures/solar_system.webp" alt="Neptune">
+        <div class="item">
+            From this top-down view, the Solar System unfolds as a vast, structured dance of celestial bodies orbiting
+            the Sun. The inner rocky planets—Mercury, Venus, Earth, and Mars—lie close to the center, while the gas and
+            ice giants—Jupiter, Saturn, Uranus, and Neptune—trace wider orbits. The asteroid belt separates the inner
+            and outer planets, and beyond Neptune, the Kuiper Belt stretches into the distant reaches of space.
+            Each planet follows a unique elliptical path, moving in harmony under the Sun’s gravitational influence,
+            showcasing the elegant mechanics of our cosmic neighborhood.
+        </div>
+    </div>
+
     <div id=placeholder-temp>
         .
     </div>
