@@ -18,6 +18,8 @@ const scalePlanet = 1 / 5000
 const scaleDistance = 1 / 1000000
 const AU = 149597870.700
 const planetPosition = [0, 0.466697, 0.728213, 1, 1, 1.666206, 5.4570, 10.1238, 20.0965, 30.33];
+
+let initialisationTime
 export const triggerPoints = [
     planetPosition[1] - 0.2,
     planetPosition[2] - 0.2,
@@ -30,7 +32,7 @@ export const triggerPoints = [
     planetPosition[9] - 6.6].map(value => value * scaleDistance * AU);
 
 class Planet {
-    constructor(radius, textureUrl, position, axialTiltDegrees = 0) {
+    constructor(radius, textureUrl, position, rotationPeriodMinutes, axialTiltDegrees = 0) {
         //planet
         radius *= scalePlanet;
         const segments = Math.max(50, radius * 3)
@@ -53,6 +55,8 @@ class Planet {
         this.rotationAxel.position.set(position.x, position.y, position.z)
         this.rotationAxel.rotation.x = axialTiltDegrees * (Math.PI / 180)
         this.rotationAxel.visible = false;
+        this.rotationPeriod = rotationPeriodMinutes
+        this.initializeRotationFromTime(initialisationTime)
     }
 
     addAtmosphere(distance, textureUrl, speedPercent) {
@@ -84,9 +88,19 @@ class Planet {
         }
     }
 
-    rotate(rotationPeriod, minuteTimeStep) {
+    initializeRotationFromTime(currentTime) {
+        //just need one date to calculate the current rotationState from
+        const j2000 = Date.UTC(2000, 0, 1, 12, 0, 0);
+        const siderealDayMs = this.rotationPeriod * 60 * 1000;
+
+        const elapsed = currentTime - j2000;
+        const turns = (elapsed / siderealDayMs) % 1;
+        this.mesh.rotation.y = turns * 2 * Math.PI;
+    }
+
+    rotate(minuteTimeStep) {
         //euler angle in degrees: 360/minutes
-        const degreesPerMinute = 360 / rotationPeriod
+        const degreesPerMinute = 360 / this.rotationPeriod
         const radiansPerStep = (degreesPerMinute) * (Math.PI / 180) * minuteTimeStep;
         this.mesh.rotation.y += radiansPerStep
         this.mesh.rotation.y = this.mesh.rotation.y % (2 * Math.PI)
@@ -123,10 +137,9 @@ class Planet {
         const cameraShift = Math.atan2(3 * this.mesh.geometry.parameters.radius, this.mesh.position.length());
         const x = this.mesh.position.x;
         const z = this.mesh.position.z;
-        return Math.atan2(z, x)+cameraShift;
+        return Math.atan2(z, x) + cameraShift;
     }
 }
-
 
 class Orbit {
     constructor(centerObject, orbitingObject, aphelion, perihelion, rotationArgumentPerihelion, rotationLongitudeAscendingNode, inclination, eccentricity, perihelionTime, orbitalPeriod) {
@@ -155,7 +168,7 @@ class Orbit {
         );
         const material = new Three.LineBasicMaterial({color: 0xff0000});
         this.ellipse = new Three.Line(this.calculateEllipseGeometry(), material);
-        this.updateTimePosition(Date.now())
+        this.updateTimePosition(initialisationTime)
     }
 
     calculateEllipseGeometry() {
@@ -224,232 +237,261 @@ class Donut {
     }
 }
 
+export let planets = [];
 
-//sun
-const sun = new Planet(
-    69570,
-    sunTextureUrl,
-    new Three.Vector3(0, 0, planetPosition[0]),
-    7.25 //(ecliptic), not plain :(
-)
+export let orbits = [];
 
-// Mercury
-const mercury = new Planet(
-    2439.7,
-    mercuryTextureUrl,
-    new Three.Vector3(0, 0, planetPosition[1]),
-    0.03
-);
-const mercuryOrbit = new Orbit(sun, mercury,
-    0.466697,
-    0.307499,
-    29.124,
-    48.331,
-    6.35,
-    0.205630,
-    new Date(Date.UTC(2025, 3, 4, 13, 40)),
-    87.9691
-);
+export function createPlanetsAndOrbits(currentTime, scene) {
 
-// Venus
-const venus = new Planet(
-    6051.8,
-    venusTextureUrl,
-    new Three.Vector3(0, 0, planetPosition[2]),
-    -2.64
-);
-venus.addAtmosphere(70, venusAtmosphereTextureUrl, 25)
-const venusOrbit = new Orbit(sun, venus,
-    0.728213,
-    0.718440,
-    54.884,
-    76.680,
-    2.15,
-    0.006772,
-    new Date(Date.UTC(2025, 2, 19, 19, 44)),
-    224.701
-);
+    initialisationTime = currentTime
+    planets.length = 0;
+    orbits.length = 0;
 
+    //sun
+    const sun = new Planet(
+        69570,
+        sunTextureUrl,
+        new Three.Vector3(0, 0, planetPosition[0]),
+        36567,
+        7.25 //(ecliptic), not plain :(
+    )
 
-// Earth
-const earth = new Planet(
-    6371.0,
-    earthTextureUrl,
-    new Three.Vector3(0, 0, planetPosition[3]),
-    23.44
-);
-earth.addAtmosphere(25, earthCloudsTextureUrl, 25)
-const earthOrbit = new Orbit(sun, earth,
-    1.01670963823,
-    0.983292404576,
-    114.20783,
-    -11.26064,
-    1.57869,
-    0.0167086,
-    new Date(Date.UTC(2025, 1, 5, 1, 22)),
-    365.256363004
-);
+    // Mercury
+    const mercury = new Planet(
+        2439.7,
+        mercuryTextureUrl,
+        new Three.Vector3(0, 0, planetPosition[1]),
+        84960,
+        0.03
+    );
+    const mercuryOrbit = new Orbit(sun, mercury,
+        0.466697,
+        0.307499,
+        29.124,
+        48.331,
+        6.35,
+        0.205630,
+        new Date(Date.UTC(2025, 3, 4, 13, 40)),
+        87.9691
+    );
+
+    // Venus
+    const venus = new Planet(
+        6051.8,
+        venusTextureUrl,
+        new Three.Vector3(0, 0, planetPosition[2]),
+        -350906,
+        -2.64
+    );
+    venus.addAtmosphere(70, venusAtmosphereTextureUrl, 25)
+    const venusOrbit = new Orbit(sun, venus,
+        0.728213,
+        0.718440,
+        54.884,
+        76.680,
+        2.15,
+        0.006772,
+        new Date(Date.UTC(2025, 2, 19, 19, 44)),
+        224.701
+    );
 
 
-// Moon
-const moon = new Planet(
-    1737.4,
-    moonTextureUrl,
-    new Three.Vector3(0, 0, planetPosition[4]),
-    6.68
-);
-//initially rotate moon to approximately face the correct side to the earth
-moon.mesh.rotation.y = 1.5*Math.PI
-//all only approximated values
-const moonOrbit = new Orbit(earth, moon,
-    0.00242383129 + 0.02,//unrealistic scales, moon would be in earth
-    0.00270993162 + 0.02,
-    318.15,
-    25.08,
-    6.68,
-    0.0549,
-    new Date(Date.UTC(2024, 12, 4, 5, 23)),
-    27.321661
-);
-
-// Mars
-const mars = new Planet(
-    3389.5,
-    marsTextureUrl,
-    new Three.Vector3(0, 0, planetPosition[5]),
-    25.19
-);
-const marsOrbit = new Orbit(sun, mars,
-    1.66621,
-    1.3814,
-    286.5,
-    49.578,
-    1.63,
-    0.0934,
-    new Date(Date.UTC(2024, 5, 8, 11, 31)),
-    686.980
-);
-
-// Jupiter
-const jupiter = new Planet(
-    69911,
-    jupiterTextureUrl,
-    new Three.Vector3(0, 0, planetPosition[6]),
-    3.13
-);
-const jupiterOrbit = new Orbit(sun, jupiter,
-    5.4570,
-    4.9506,
-    273.867,
-    100.464,
-    0.32,
-    0.0489,
-    new Date(Date.UTC(2023, 1, 21)),
-    4332.59
-);
-
-// Saturn
-const saturn = new Planet(
-    58232,
-    saturnTextureUrl,
-    new Three.Vector3(0, 0, planetPosition[7]),
-    26.73
-);
-//saturnRing
-saturn.addDonut(
-    70000, 140180,
-    saturnRingsTextureUrl,
-    new Three.Vector3(0, 0, planetPosition[7]),
-    26.73)
-const saturnOrbit = new Orbit(sun, saturn,
-    10.1238,
-    9.0412,
-    339.392,
-    113.665,
-    0.93,
-    0.0565,
-    new Date(Date.UTC(2032, 10, 25)),
-    10755.70
-);
+    // Earth
+    const earth = new Planet(
+        6371.0,
+        earthTextureUrl,
+        new Three.Vector3(0, 0, planetPosition[3]),
+        1436,
+        23.44
+    );
+    earth.addAtmosphere(25, earthCloudsTextureUrl, 25)
+    const earthOrbit = new Orbit(sun, earth,
+        1.01670963823,
+        0.983292404576,
+        114.20783,
+        -11.26064,
+        1.57869,
+        0.0167086,
+        new Date(Date.UTC(2025, 1, 5, 1, 22)),
+        365.256363004
+    );
 
 
-// Uranus
-const uranus = new Planet(
-    25362,
-    uranusTextureUrl,
-    new Three.Vector3(0, 0, planetPosition[8]),
-    -82.23
-);
-const uranusOrbit = new Orbit(sun, uranus,
-    20.0965,
-    18.2861,
-    96.998,
-    74.006,
-    0.99,
-    0.04717,
-    new Date(Date.UTC(2049, 7, 22)),
-    30688.5
-);
+    // Moon
+    const moon = new Planet(
+        1737.4,
+        moonTextureUrl,
+        new Three.Vector3(0, 0, planetPosition[4]),
+        39341,
+        6.68
+    );
+    //initially rotate moon to approximately face the correct side to the earth
+    moon.mesh.rotation.y = 1.5 * Math.PI
+    //all only approximated values
+    const moonOrbit = new Orbit(earth, moon,
+        0.00242383129 + 0.02,//unrealistic scales, moon would be in earth
+        0.00270993162 + 0.02,
+        318.15,
+        25.08,
+        6.68,
+        0.0549,
+        new Date(Date.UTC(2024, 12, 4, 5, 23)),
+        27.321661
+    );
 
-// Neptune
-const neptune = new Planet(
-    24622,
-    neptuneTextureUrl,
-    new Three.Vector3(0, 0, planetPosition[9]),
-    28.32
-);
-const neptuneOrbit = new Orbit(sun, neptune,
-    30.33,
-    29.81,
-    273.187,
-    131.783,
-    0.74,
-    0.008678,
-    new Date(Date.UTC(2043, 8, 20)),
-    60195
-);
+    // Mars
+    const mars = new Planet(
+        3389.5,
+        marsTextureUrl,
+        new Three.Vector3(0, 0, planetPosition[5]),
+        1476,
+        25.19
+    );
+    const marsOrbit = new Orbit(sun, mars,
+        1.66621,
+        1.3814,
+        286.5,
+        49.578,
+        1.63,
+        0.0934,
+        new Date(Date.UTC(2024, 5, 8, 11, 31)),
+        686.980
+    );
 
-export const planets = [
-    sun,
-    mercury,
-    venus,
-    earth,
-    moon,
-    mars,
-    jupiter,
-    saturn,
-    uranus,
-    neptune
-];
+    // Jupiter
+    const jupiter = new Planet(
+        69911,
+        jupiterTextureUrl,
+        new Three.Vector3(0, 0, planetPosition[6]),
+        595,
+        3.13
+    );
+    const jupiterOrbit = new Orbit(sun, jupiter,
+        5.4570,
+        4.9506,
+        273.867,
+        100.464,
+        0.32,
+        0.0489,
+        new Date(Date.UTC(2023, 1, 21)),
+        4332.59
+    );
 
-export const orbits = [
-    mercuryOrbit,
-    venusOrbit,
-    earthOrbit,
-    moonOrbit,
-    marsOrbit,
-    jupiterOrbit,
-    saturnOrbit,
-    uranusOrbit,
-    neptuneOrbit
-];
+    // Saturn
+    const saturn = new Planet(
+        58232,
+        saturnTextureUrl,
+        new Three.Vector3(0, 0, planetPosition[7]),
+        633,
+        26.73
+    );
+    //saturnRing
+    saturn.addDonut(
+        70000, 140180,
+        saturnRingsTextureUrl,
+        new Three.Vector3(0, 0, planetPosition[7]),
+        26.73)
+    const saturnOrbit = new Orbit(sun, saturn,
+        10.1238,
+        9.0412,
+        339.392,
+        113.665,
+        0.93,
+        0.0565,
+        new Date(Date.UTC(2032, 10, 25)),
+        10755.70
+    );
+
+
+    // Uranus
+    const uranus = new Planet(
+        25362,
+        uranusTextureUrl,
+        new Three.Vector3(0, 0, planetPosition[8]),
+        1034,
+        -82.23
+    );
+    const uranusOrbit = new Orbit(sun, uranus,
+        20.0965,
+        18.2861,
+        96.998,
+        74.006,
+        0.99,
+        0.04717,
+        new Date(Date.UTC(2049, 7, 22)),
+        30688.5
+    );
+
+    // Neptune
+    const neptune = new Planet(
+        24622,
+        neptuneTextureUrl,
+        new Three.Vector3(0, 0, planetPosition[9]),
+        960,
+        28.32
+    );
+    const neptuneOrbit = new Orbit(sun, neptune,
+        30.33,
+        29.81,
+        273.187,
+        131.783,
+        0.74,
+        0.008678,
+        new Date(Date.UTC(2043, 8, 20)),
+        60195
+    );
+
+
+    planets.push(
+        sun,
+        mercury,
+        venus,
+        earth,
+        moon,
+        mars,
+        jupiter,
+        saturn,
+        uranus,
+        neptune
+    );
+    orbits.push(
+        mercuryOrbit,
+        venusOrbit,
+        earthOrbit,
+        moonOrbit,
+        marsOrbit,
+        jupiterOrbit,
+        saturnOrbit,
+        uranusOrbit,
+        neptuneOrbit
+    );
+
+    planets.forEach(p => p.addToScene(scene));
+    orbits.forEach(o => o.addToScene(scene));
+}
 
 export function stepTime(simulationTime) {
     orbits.forEach(o => o.updateTimePosition(simulationTime))
 }
 
 export function stepRotation(minuteTimeStep) {
-    sun.rotate(36567, minuteTimeStep) //Sun: 25d 9h 7m
-    mercury.rotate(84960, minuteTimeStep) //Mercury: 58d 16h
-    venus.rotate(-350906, minuteTimeStep) //Venus: 243d 26m
-    earth.rotate(1436, minuteTimeStep) //Earth: 23h 56m
-    moon.rotate(39341, minuteTimeStep) //Moon: locked:  27d 7h 41m
-    mars.rotate(1476, minuteTimeStep) //Mars: 24h 36m
-    jupiter.rotate(595, minuteTimeStep) //Jupiter: 9h 55m
-    saturn.rotate(633, minuteTimeStep) //Saturn: 10h 33m
-    saturn.donut.rotate(720, minuteTimeStep) //Saturn main rings: 5h-14h =>using 12h
-    uranus.rotate(1034, minuteTimeStep) //Uranus: 17h 14m
-    neptune.rotate(960, minuteTimeStep) //Neptune: 16h
+    //Sun: 25d 9h 7m
+    //Mercury: 58d 16h
+    //Venus: 243d 26m
+    //Earth: 23h 56m
+    //Moon: locked:  27d 7h 41m
+    //Mars: 24h 36m
+    //Jupiter: 9h 55m
+    //Saturn: 10h 33m
+    //Saturn main rings: 5h-14h =>using 12h
+    //Uranus: 17h 14m
+    //Neptune: 16h
+
+    if (!planets.length) return;
+    planets.forEach(p => {
+        if (p.donut) p.donut.rotate(720, minuteTimeStep); // Saturn rings
+        p.rotate(minuteTimeStep);
+    });
 
 }
 

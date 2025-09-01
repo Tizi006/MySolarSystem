@@ -6,6 +6,8 @@ import * as ph from './planethelper.js'
 import backgroundUrl from '../images/textures/2kCompressed/8k_stars_milky_way.webp'
 import {setBoxVisibility, getCurrentTimeIncrement, updateDate} from "./user-events.js";
 
+export const simulationTime = new Date(Date.now()+66666660); // In UTC
+
 /*Initialize scene*/
 const scene = new Three.Scene();
 const camera = new Three.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 50000);
@@ -38,8 +40,9 @@ scene.background = backgroundTexture;
 scene.add(light);
 scene.add(lightUniversal);
 scene.add(lightUniversal.target)
-ph.planets.forEach(p => p.addToScene(scene))
-ph.orbits.forEach(o => o.addToScene(scene))
+
+ph.createPlanetsAndOrbits(simulationTime,scene)
+
 renderer.render(scene, camera);
 
 
@@ -70,7 +73,6 @@ function animate() {
     renderer.render(scene, camera);
 }
 
-export const simulationTime = new Date(Date.now()); // In UTC
 setInterval(() => {
     ph.stepRotation(getCurrentTimeIncrement() / 100);
 
