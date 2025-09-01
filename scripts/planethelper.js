@@ -299,7 +299,7 @@ const moon = new Planet(
     6.68
 );
 //initially rotate moon to approximately face the correct side to the earth
-moon.mesh.rotation.y = Math.PI
+moon.mesh.rotation.y = 1.5*Math.PI
 //all only approximated values
 const moonOrbit = new Orbit(earth, moon,
     0.00242383129 + 0.02,//unrealistic scales, moon would be in earth
@@ -443,7 +443,7 @@ export function stepRotation(minuteTimeStep) {
     mercury.rotate(84960, minuteTimeStep) //Mercury: 58d 16h
     venus.rotate(-350906, minuteTimeStep) //Venus: 243d 26m
     earth.rotate(1436, minuteTimeStep) //Earth: 23h 56m
-    moon.rotate(-39341, minuteTimeStep) //Moon: locked:  27d 7h 41m
+    moon.rotate(39341, minuteTimeStep) //Moon: locked:  27d 7h 41m
     mars.rotate(1476, minuteTimeStep) //Mars: 24h 36m
     jupiter.rotate(595, minuteTimeStep) //Jupiter: 9h 55m
     saturn.rotate(633, minuteTimeStep) //Saturn: 10h 33m
