@@ -73,8 +73,8 @@ class Planet {
         this.atmosphere.rotation.x = this.mesh.rotation.x
     }
 
-    addDonut(innerRadius, outerRadius, textureUrl, centerPosition, axialTiltDegrees = 0) {
-        this.donut = new Donut(innerRadius, outerRadius, textureUrl, centerPosition, axialTiltDegrees)
+    addDonut(innerRadius, outerRadius, textureUrl, centerPosition, rotationPeriodMinutes, axialTiltDegrees = 0) {
+        this.donut = new Donut(innerRadius, outerRadius, textureUrl, centerPosition, rotationPeriodMinutes, axialTiltDegrees)
     }
 
     addToScene(scene) {
@@ -107,6 +107,9 @@ class Planet {
         if (this.atmosphere) {
             this.atmosphere.rotation.y += radiansPerStep + radiansPerStep * (this.atmosphereSpeedPercent / 100)
             this.atmosphere.rotation.y = this.atmosphere.rotation.y % (2 * Math.PI)
+        }
+        if (this.donut) {
+            this.donut.rotate(minuteTimeStep)
         }
     }
 
@@ -210,7 +213,7 @@ class Orbit {
 }
 
 class Donut {
-    constructor(innerRadius, outerRadius, textureUrl, centerPosition, axialTiltDegrees) {
+    constructor(innerRadius, outerRadius, textureUrl, centerPosition, rotationPeriodMinutes, axialTiltDegrees) {
         centerPosition.multiplyScalar(scaleDistance * AU)
         innerRadius *= scalePlanet;
         outerRadius *= scalePlanet;
@@ -226,11 +229,12 @@ class Donut {
             }));
         this.mesh.position.set(centerPosition.x, centerPosition.y, centerPosition.z)
         this.mesh.rotation.x = (axialTiltDegrees - 90) * (Math.PI / 180)
+        this.rotationPeriod = rotationPeriodMinutes
     }
 
-    rotate(rotationPeriod, minuteTimeStep) {
+    rotate(minuteTimeStep) {
         //euler angle in degrees: 360/minutes
-        const degreesPerMinute = 360 / rotationPeriod
+        const degreesPerMinute = 360 / this.rotationPeriod
         const radiansPerStep = degreesPerMinute * (Math.PI / 180) * minuteTimeStep;
         this.mesh.rotation.z += radiansPerStep
         this.mesh.rotation.z = this.mesh.rotation.z % (2 * Math.PI)
@@ -390,6 +394,7 @@ export function createPlanetsAndOrbits(currentTime, scene) {
         70000, 140180,
         saturnRingsTextureUrl,
         new Three.Vector3(0, 0, planetPosition[7]),
+        720,
         26.73)
     const saturnOrbit = new Orbit(sun, saturn,
         10.1238,
@@ -489,10 +494,8 @@ export function stepRotation(minuteTimeStep) {
 
     if (!planets.length) return;
     planets.forEach(p => {
-        if (p.donut) p.donut.rotate(720, minuteTimeStep); // Saturn rings
         p.rotate(minuteTimeStep);
     });
-
 }
 
 export function getFocusedPlanetID(cameraDistance, controls) {
