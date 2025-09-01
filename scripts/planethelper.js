@@ -32,7 +32,7 @@ export const triggerPoints = [
     planetPosition[9] - 6.6].map(value => value * scaleDistance * AU);
 
 class Planet {
-    constructor(radius, textureUrl, position, rotationPeriodMinutes, axialTiltDegrees = 0) {
+    constructor(radius, textureUrl, position, rotationPeriodMinutes, axialTiltDegrees = 0, initialRotationOffset = 0) {
         //planet
         radius *= scalePlanet;
         const segments = Math.max(50, radius * 3)
@@ -56,7 +56,7 @@ class Planet {
         this.rotationAxel.rotation.x = axialTiltDegrees * (Math.PI / 180)
         this.rotationAxel.visible = false;
         this.rotationPeriod = rotationPeriodMinutes
-        this.initializeRotationFromTime(initialisationTime)
+        this.initializeRotationFromTime(initialisationTime, initialRotationOffset)
     }
 
     addAtmosphere(distance, textureUrl, speedPercent) {
@@ -88,14 +88,14 @@ class Planet {
         }
     }
 
-    initializeRotationFromTime(currentTime) {
+    initializeRotationFromTime(currentTime, extraRotation = 0) {
         //just need one date to calculate the current rotationState from
         const j2000 = Date.UTC(2000, 0, 1, 12, 0, 0);
         const siderealDayMs = this.rotationPeriod * 60 * 1000;
 
         const elapsed = currentTime - j2000;
         const turns = (elapsed / siderealDayMs) % 1;
-        this.mesh.rotation.y = turns * 2 * Math.PI;
+        this.mesh.rotation.y = (turns * 2 * Math.PI + extraRotation) % (2 * Math.PI)
     }
 
     rotate(minuteTimeStep) {
@@ -306,7 +306,8 @@ export function createPlanetsAndOrbits(currentTime, scene) {
         earthTextureUrl,
         new Three.Vector3(0, 0, planetPosition[3]),
         1436,
-        23.44
+        23.44,
+        4.2
     );
     earth.addAtmosphere(25, earthCloudsTextureUrl, 25)
     const earthOrbit = new Orbit(sun, earth,

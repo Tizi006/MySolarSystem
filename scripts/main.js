@@ -4,9 +4,9 @@ import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
 import * as ph from './planethelper.js'
 //initialize images
 import backgroundUrl from '../images/textures/2kCompressed/8k_stars_milky_way.webp'
-import {setBoxVisibility, getCurrentTimeIncrement, updateDate} from "./user-events.js";
+import {setBoxVisibility, getCurrentTimeIncrement, updateDate, syncVisibilityWithUI} from "./user-events.js";
 
-export const simulationTime = new Date(Date.now()+66666660); // In UTC
+export const simulationTime = new Date(Date.now()); // In UTC
 
 /*Initialize scene*/
 const scene = new Three.Scene();
@@ -42,6 +42,8 @@ scene.add(lightUniversal);
 scene.add(lightUniversal.target)
 
 ph.createPlanetsAndOrbits(simulationTime,scene)
+
+syncVisibilityWithUI()
 
 renderer.render(scene, camera);
 
