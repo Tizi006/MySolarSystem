@@ -151,13 +151,16 @@ export function getCurrentTimeIncrement() {
 }
 
 const AxelCheckBox = document.getElementById('toggle-rotation-axel');
-ph.planets.forEach(p=>p.rotationAxel.visible= AxelCheckBox.checked)
 AxelCheckBox.addEventListener('change', () => {
     ph.planets.forEach(p=>p.rotationAxel.visible= AxelCheckBox.checked)
 });
 
 const OrbitCheckBox = document.getElementById('toggle-orbit-ellipse');
-ph.orbits.forEach(o=>o.ellipse.visible= OrbitCheckBox.checked)
 OrbitCheckBox.addEventListener('change', () => {
     ph.orbits.forEach(o=>o.ellipse.visible= OrbitCheckBox.checked)
 });
+
+export function syncVisibilityWithUI() {
+    ph.planets.forEach(p=>p.rotationAxel.visible= AxelCheckBox.checked)
+    ph.orbits.forEach(o=>o.ellipse.visible= OrbitCheckBox.checked)
+}
