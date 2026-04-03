@@ -43,5 +43,5 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/tizi006/solar_system:latest
-            ghcr.io/tizi006/solar_system:${{ github.sha }}
+            ghcr.io/${{ github.repository }}:latest
+            ghcr.io/${{ github.repository }}:${{ github.sha }}
